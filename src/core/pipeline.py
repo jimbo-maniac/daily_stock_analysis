@@ -1176,7 +1176,7 @@ class StockAnalysisPipeline:
         results: List[AnalysisResult] = []
         
         # 使用线程池并发处理
-        # 注意：max_workers 设置较低（默认3）以避免触发反爬
+        # 注意：max_workers 默认 5，可通过 MAX_WORKERS 环境变量调整
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # 提交任务
             future_to_code = {
