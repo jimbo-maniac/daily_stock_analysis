@@ -89,6 +89,7 @@ jobs:
           # 数据源
           # ==========================================
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           
           # ==========================================
           # 搜索服务

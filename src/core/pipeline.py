@@ -40,6 +40,7 @@ from src.stock_analyzer import StockTrendAnalyzer, TrendAnalysisResult
 from src.core.trading_calendar import get_market_for_stock, is_market_open
 from data_provider.us_index_mapping import is_us_stock_code
 from bot.models import BotMessage
+from data_provider.fmp_client import FMPClient
 
 
 logger = logging.getLogger(__name__)
@@ -116,6 +117,12 @@ class StockAnalysisPipeline:
             logger.info("搜索服务已启用")
         else:
             logger.warning("搜索服务未启用（未配置搜索能力）")
+
+        # FMP client (optional) — None when FMP_API_KEY is not set
+        fmp_key = getattr(self.config, "fmp_api_key", None)
+        self.fmp_client: Optional[FMPClient] = FMPClient(fmp_key) if fmp_key else None
+        if self.fmp_client:
+            logger.info("FMP fundamentals client enabled")
 
         # 初始化社交舆情服务（仅美股）
         self.social_sentiment_service = SocialSentimentService(
@@ -373,14 +380,23 @@ class StockAnalysisPipeline:
                     'yesterday': {}
                 }
             
+            # Step 5.5: FMP fundamentals (non-fatal, cached per run)
+            fmp_fundamentals = None
+            if self.fmp_client:
+                try:
+                    fmp_fundamentals = self.fmp_client.get_fundamentals(code)
+                except Exception as e:
+                    logger.warning(f"{stock_name}({code}) FMP fetch failed: {e}")
+
             # Step 6: 增强上下文数据（添加实时行情、筹码、趋势分析结果、股票名称）
             enhanced_context = self._enhance_context(
-                context, 
-                realtime_quote, 
+                context,
+                realtime_quote,
                 chip_data,
                 trend_result,
                 stock_name,  # 传入股票名称
                 fundamental_context,
+                fmp_fundamentals=fmp_fundamentals,
             )
             
             # Step 7: 调用 AI 分析（传入增强的上下文和新闻）
@@ -435,7 +451,8 @@ class StockAnalysisPipeline:
         chip_data: Optional[ChipDistribution],
         trend_result: Optional[TrendAnalysisResult],
         stock_name: str = "",
-        fundamental_context: Optional[Dict[str, Any]] = None
+        fundamental_context: Optional[Dict[str, Any]] = None,
+        fmp_fundamentals: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         增强分析上下文
@@ -589,6 +606,10 @@ class StockAnalysisPipeline:
                 "invalid fundamental context",
             )
         )
+
+        # FMP fundamentals block (None when FMP is disabled or fetch failed)
+        if fmp_fundamentals is not None:
+            enhanced["fmp_fundamentals"] = fmp_fundamentals
 
         return enhanced
 

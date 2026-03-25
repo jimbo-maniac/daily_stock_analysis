@@ -640,6 +640,7 @@ class Config:
     log_level: str = "INFO"  # 日志级别
     
     # === 系统配置 ===
+    fmp_api_key: Optional[str] = None  # Financial Modeling Prep API key
     max_workers: int = 8  # 8 concurrent workers (~12 min for 38 stocks)
     debug: bool = False
     http_proxy: Optional[str] = None  # HTTP 代理 (例如: http://127.0.0.1:10809)
@@ -1239,6 +1240,7 @@ class Config:
             ),
             log_dir=os.getenv('LOG_DIR', './logs'),
             log_level=os.getenv('LOG_LEVEL', 'INFO'),
+            fmp_api_key=os.getenv('FMP_API_KEY') or None,
             max_workers=parse_env_int(os.getenv('MAX_WORKERS'), 8, field_name='MAX_WORKERS', minimum=1),
             debug=os.getenv('DEBUG', 'false').lower() == 'true',
             config_validate_mode=os.getenv('CONFIG_VALIDATE_MODE', 'warn').lower(),

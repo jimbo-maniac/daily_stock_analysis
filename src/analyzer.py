@@ -1166,6 +1166,33 @@ class GeminiAnalyzer:
 > 若上述字段为 N/A 或缺失，请明确写“数据缺失，无法判断”，禁止编造。
 """
 
+        # FMP fundamentals block (English, shown when FMP_API_KEY is configured)
+        fmp = context.get("fmp_fundamentals")
+        if isinstance(fmp, dict):
+            def _fmt_fmp(val, pct: bool = False, suffix: str = "") -> str:
+                if val is None:
+                    return "N/A"
+                try:
+                    f = float(val)
+                    if pct:
+                        return f"{f * 100:.2f}%"
+                    return f"{f:.2f}{suffix}"
+                except (TypeError, ValueError):
+                    return "N/A"
+
+            prompt += f"""
+### Fundamentals (FMP)
+| Metric | Value |
+|--------|-------|
+| P/E (TTM) | {_fmt_fmp(fmp.get('pe_ttm'))} |
+| P/B | {_fmt_fmp(fmp.get('pb'))} |
+| Dividend Yield | {_fmt_fmp(fmp.get('dividend_yield'), pct=True)} |
+| ROE | {_fmt_fmp(fmp.get('roe'), pct=True)} |
+| Revenue YoY Growth | {_fmt_fmp(fmp.get('revenue_yoy_growth'), suffix='%')} |
+
+> If any field shows N/A, explicitly state "data unavailable" — do not invent values.
+"""
+
         # 添加筹码分布数据
         if 'chip' in context:
             chip = context['chip']
