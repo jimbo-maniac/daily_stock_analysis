@@ -2095,16 +2095,18 @@ class SearchService:
         provider_max_results = self._provider_request_size(max_results)
 
         # 构建搜索查询（优化搜索效果）
-        is_foreign = self._is_foreign_stock(stock_code)
+        CHINA_RELEVANT = {"ASML", "MP", "LNG", "NEM"}
+        symbol = stock_code.strip().upper()
         if focus_keywords:
-            # 如果提供了关键词，直接使用关键词作为查询
-            query = " ".join(focus_keywords)
-        elif is_foreign:
-            # 港股/美股使用英文搜索关键词
-            query = f"{stock_name} {stock_code} stock latest news"
+            queries = [" ".join(focus_keywords)]
+        elif symbol in CHINA_RELEVANT:
+            queries = [
+                f"{symbol} stock latest news analysis 2026",
+                f"{symbol} 最新消息 分析",
+            ]
         else:
-            # 默认主查询：股票名称 + 核心关键词
-            query = f"{stock_name} {stock_code} 股票 最新消息"
+            queries = [f"{symbol} stock latest news analysis 2026"]
+        query = queries[0]
 
         logger.info(
             (
@@ -2128,41 +2130,55 @@ class SearchService:
             logger.info(f"使用缓存搜索结果: {stock_name}({stock_code})")
             return cached
 
-        # 依次尝试各个搜索引擎（若过滤后为空，继续尝试下一引擎）
+        # 依次对每个查询尝试各个搜索引擎，合并结果
         had_provider_success = False
-        for provider in self._providers:
-            if not provider.is_available:
-                continue
+        all_results = []
 
-            search_kwargs: Dict[str, Any] = {}
-            if isinstance(provider, TavilySearchProvider):
-                search_kwargs["topic"] = "news"
+        for q in queries:
+            for provider in self._providers:
+                if not provider.is_available:
+                    continue
 
-            response = provider.search(query, provider_max_results, days=search_days, **search_kwargs)
-            filtered_response = self._filter_news_response(
-                response,
-                search_days=search_days,
-                max_results=max_results,
-                log_scope=f"{stock_code}:{provider.name}:stock_news",
-            )
-            had_provider_success = had_provider_success or bool(response.success)
+                search_kwargs: Dict[str, Any] = {}
+                if isinstance(provider, TavilySearchProvider):
+                    search_kwargs["topic"] = "news"
 
-            if filtered_response.success and filtered_response.results:
-                logger.info(f"使用 {provider.name} 搜索成功")
-                self._put_cache(cache_key, filtered_response)
-                return filtered_response
-            else:
-                if response.success and not filtered_response.results:
-                    logger.info(
-                        "%s 搜索成功但过滤后无有效新闻，继续尝试下一引擎",
-                        provider.name,
-                    )
+                response = provider.search(q, provider_max_results, days=search_days, **search_kwargs)
+                filtered_response = self._filter_news_response(
+                    response,
+                    search_days=search_days,
+                    max_results=max_results,
+                    log_scope=f"{stock_code}:{provider.name}:stock_news",
+                )
+                had_provider_success = had_provider_success or bool(response.success)
+
+                if filtered_response.success and filtered_response.results:
+                    logger.info(f"使用 {provider.name} 搜索成功 (query='{q}')")
+                    all_results.extend(filtered_response.results)
+                    break
                 else:
-                    logger.warning(
-                        "%s 搜索失败: %s，尝试下一个引擎",
-                        provider.name,
-                        response.error_message,
-                    )
+                    if response.success and not filtered_response.results:
+                        logger.info(
+                            "%s 搜索成功但过滤后无有效新闻，继续尝试下一引擎",
+                            provider.name,
+                        )
+                    else:
+                        logger.warning(
+                            "%s 搜索失败: %s，尝试下一个引擎",
+                            provider.name,
+                            response.error_message,
+                        )
+
+        if all_results:
+            combined_response = SearchResponse(
+                query=query,
+                results=all_results,
+                provider="Combined",
+                success=True,
+                error_message=None,
+            )
+            self._put_cache(cache_key, combined_response)
+            return combined_response
 
         if had_provider_success:
             return SearchResponse(
@@ -2172,7 +2188,7 @@ class SearchService:
                 success=True,
                 error_message=None,
             )
-        
+
         # 所有引擎都失败
         return SearchResponse(
             query=query,
