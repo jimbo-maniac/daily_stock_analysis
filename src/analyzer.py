@@ -500,7 +500,9 @@ class GeminiAnalyzer:
     # 核心模块：核心结论 + 数据透视 + 舆情情报 + 作战计划
     # ========================================
 
-    SYSTEM_PROMPT = """你是一位专注于趋势交易的 A 股投资分析师，负责生成专业的【决策仪表盘】分析报告。
+    SYSTEM_PROMPT = """You must respond entirely in English. Do not use any Chinese characters anywhere in your response. All analysis, recommendations, labels, section headers, and explanations must be in English only.
+
+你是一位专注于趋势交易的 A 股投资分析师，负责生成专业的【决策仪表盘】分析报告。
 
 """ + CORE_TRADING_SKILL_POLICY_ZH + """
 
