@@ -41,6 +41,7 @@ from src.core.trading_calendar import get_market_for_stock, is_market_open
 from data_provider.us_index_mapping import is_us_stock_code
 from bot.models import BotMessage
 from data_provider.fmp_client import FMPClient
+from src.services.apify_reddit_client import ApifyRedditClient
 
 
 logger = logging.getLogger(__name__)
@@ -123,6 +124,14 @@ class StockAnalysisPipeline:
         self.fmp_client: Optional[FMPClient] = FMPClient(fmp_key) if fmp_key else None
         if self.fmp_client:
             logger.info("FMP fundamentals client enabled")
+
+        # Apify Reddit client (optional) — None when APIFY_API_KEY is not set
+        apify_key = getattr(self.config, "apify_api_key", None)
+        self.apify_reddit_client: Optional[ApifyRedditClient] = (
+            ApifyRedditClient(apify_key) if apify_key else None
+        )
+        if self.apify_reddit_client:
+            logger.info("Apify Reddit sentiment client enabled")
 
         # 初始化社交舆情服务（仅美股）
         self.social_sentiment_service = SocialSentimentService(
@@ -388,6 +397,15 @@ class StockAnalysisPipeline:
                 except Exception as e:
                     logger.warning(f"{stock_name}({code}) FMP fetch failed: {e}")
 
+            # Step 5.6: Apify Reddit sentiment (selected tickers, non-fatal)
+            # Runs in the current thread-pool worker — MAX_WORKERS caps concurrency.
+            reddit_sentiment = None
+            if self.apify_reddit_client:
+                try:
+                    reddit_sentiment = self.apify_reddit_client.get_sentiment(code)
+                except Exception as e:
+                    logger.warning(f"{stock_name}({code}) Apify Reddit fetch failed: {e}")
+
             # Step 6: 增强上下文数据（添加实时行情、筹码、趋势分析结果、股票名称）
             enhanced_context = self._enhance_context(
                 context,
@@ -397,6 +415,7 @@ class StockAnalysisPipeline:
                 stock_name,  # 传入股票名称
                 fundamental_context,
                 fmp_fundamentals=fmp_fundamentals,
+                reddit_sentiment=reddit_sentiment,
             )
             
             # Step 7: 调用 AI 分析（传入增强的上下文和新闻）
@@ -453,6 +472,7 @@ class StockAnalysisPipeline:
         stock_name: str = "",
         fundamental_context: Optional[Dict[str, Any]] = None,
         fmp_fundamentals: Optional[Dict[str, Any]] = None,
+        reddit_sentiment: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         增强分析上下文
@@ -610,6 +630,10 @@ class StockAnalysisPipeline:
         # FMP fundamentals block (None when FMP is disabled or fetch failed)
         if fmp_fundamentals is not None:
             enhanced["fmp_fundamentals"] = fmp_fundamentals
+
+        # Apify Reddit sentiment (None when disabled, ineligible ticker, or fetch failed)
+        if reddit_sentiment is not None:
+            enhanced["reddit_sentiment"] = reddit_sentiment
 
         return enhanced
 

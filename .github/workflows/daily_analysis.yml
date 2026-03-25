@@ -90,6 +90,7 @@ jobs:
           # ==========================================
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          APIFY_API_KEY: ${{ secrets.APIFY_API_KEY }}
           
           # ==========================================
           # 搜索服务

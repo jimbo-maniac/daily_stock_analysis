@@ -1242,6 +1242,23 @@ class GeminiAnalyzer:
 - 价格较昨日变化：{context.get('price_change_ratio', 'N/A')}%
 """
         
+        # Reddit Sentiment block (English, shown when Apify returned data)
+        reddit = context.get("reddit_sentiment")
+        if isinstance(reddit, dict):
+            titles = reddit.get("top_3_titles") or []
+            titles_md = "\n".join(f"  {i+1}. {t}" for i, t in enumerate(titles)) if titles else "  N/A"
+            prompt += f"""
+### Reddit Sentiment (last 7 days)
+| Metric | Value |
+|--------|-------|
+| Total Mentions (posts) | {reddit.get('total_mentions', 'N/A')} |
+| Sentiment | **{reddit.get('sentiment_label', 'N/A').upper()}** |
+
+**Top posts by upvotes:**
+{titles_md}
+
+"""
+
         # 添加新闻搜索结果（重点区域）
         news_window_days: Optional[int] = None
         context_window = context.get("news_window_days")
