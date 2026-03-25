@@ -89,6 +89,7 @@ jobs:
           # 数据源
           # ==========================================
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           APIFY_API_KEY: ${{ secrets.APIFY_API_KEY }}
           
