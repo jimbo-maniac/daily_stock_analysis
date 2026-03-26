@@ -190,7 +190,7 @@ class TestAgentFactorySkillBaseline(unittest.TestCase):
             instructions="bull_trend instructions",
         )
 
-        self.assertIn("严进策略", kwargs["default_skill_policy"])
+        self.assertIn("strict entry strategy", kwargs["default_skill_policy"])
         skill_manager.activate.assert_called_once_with(["bull_trend"])
 
     def test_explicit_empty_request_falls_back_to_primary_default_skill(self):
@@ -210,7 +210,7 @@ class TestAgentFactorySkillBaseline(unittest.TestCase):
             instructions="bull_trend instructions",
         )
 
-        self.assertIn("严进策略", kwargs["default_skill_policy"])
+        self.assertIn("strict entry strategy", kwargs["default_skill_policy"])
         skill_manager.activate.assert_called_once_with(["bull_trend"])
 
 
@@ -261,13 +261,13 @@ class TestAgentResultConversion(unittest.TestCase):
         from src.enums import ReportType
 
         dashboard = {
-            "stock_name": "贵州茅台",
+            "stock_name": "Kweichow Moutai",
             "sentiment_score": 80,
-            "trend_prediction": "看多",
-            "operation_advice": "持有",
+            "trend_prediction": "bullish",
+            "operation_advice": "hold",
             "decision_type": "hold",
-            "confidence_level": "高",
-            "dashboard": {"core_conclusion": {"one_sentence": "看好"}},
+            "confidence_level": "high",
+            "dashboard": {"core_conclusion": {"one_sentence": "viewgood"}},
             "analysis_summary": "Testing",
             "key_points": "Strong",
             "risk_warning": "High valuation",
@@ -298,15 +298,15 @@ class TestAgentResultConversion(unittest.TestCase):
         )
 
         result = pipeline._agent_result_to_analysis_result(
-            agent_result, "600519", "贵州茅台", ReportType.SIMPLE, "q123"
+            agent_result, "600519", "Kweichow Moutai", ReportType.SIMPLE, "q123"
         )
 
         self.assertIsNotNone(result)
         self.assertTrue(result.success)
         self.assertEqual(result.code, "600519")
-        self.assertEqual(result.name, "贵州茅台")
+        self.assertEqual(result.name, "Kweichow Moutai")
         self.assertEqual(result.sentiment_score, 80)
-        self.assertEqual(result.trend_prediction, "看多")
+        self.assertEqual(result.trend_prediction, "bullish")
         self.assertEqual(result.decision_type, "hold")
         self.assertIn("agent:gemini", result.data_sources)
         self.assertIsNotNone(result.dashboard)
@@ -326,13 +326,13 @@ class TestAgentResultConversion(unittest.TestCase):
         )
 
         result = pipeline._agent_result_to_analysis_result(
-            agent_result, "600519", "贵州茅台", ReportType.SIMPLE, "q123"
+            agent_result, "600519", "Kweichow Moutai", ReportType.SIMPLE, "q123"
         )
 
         self.assertIsNotNone(result)
         self.assertFalse(result.success)
         self.assertEqual(result.sentiment_score, 50)
-        self.assertEqual(result.operation_advice, "观望")
+        self.assertEqual(result.operation_advice, "wait and see")
         self.assertIn("Max steps exceeded", result.error_message)
 
     def test_convert_uses_dashboard_stock_name_when_input_is_placeholder(self):
@@ -346,19 +346,19 @@ class TestAgentResultConversion(unittest.TestCase):
             success=True,
             content="{}",
             dashboard={
-                "stock_name": "科创芯片ETF",
+                "stock_name": "STAR chipETF",
                 "sentiment_score": 75,
-                "trend_prediction": "震荡偏多",
-                "operation_advice": "持有",
+                "trend_prediction": "oscillationbiasedmultiple",
+                "operation_advice": "hold",
                 "decision_type": "hold",
             },
             provider="gemini",
         )
 
         result = pipeline._agent_result_to_analysis_result(
-            agent_result, "588200", "股票588200", ReportType.SIMPLE, "q-placeholder"
+            agent_result, "588200", "stock588200", ReportType.SIMPLE, "q-placeholder"
         )
-        self.assertEqual(result.name, "科创芯片ETF")
+        self.assertEqual(result.name, "STAR chipETF")
 
     def test_convert_keeps_input_stock_name_when_valid(self):
         """When input name is already valid, do not overwrite with dashboard value."""
@@ -371,19 +371,19 @@ class TestAgentResultConversion(unittest.TestCase):
             success=True,
             content="{}",
             dashboard={
-                "stock_name": "错误名称",
+                "stock_name": "errorname",
                 "sentiment_score": 70,
-                "trend_prediction": "看多",
-                "operation_advice": "持有",
+                "trend_prediction": "bullish",
+                "operation_advice": "hold",
                 "decision_type": "hold",
             },
             provider="gemini",
         )
 
         result = pipeline._agent_result_to_analysis_result(
-            agent_result, "600519", "贵州茅台", ReportType.SIMPLE, "q-valid"
+            agent_result, "600519", "Kweichow Moutai", ReportType.SIMPLE, "q-valid"
         )
-        self.assertEqual(result.name, "贵州茅台")
+        self.assertEqual(result.name, "Kweichow Moutai")
 
 
 # ============================================================
@@ -558,10 +558,10 @@ class TestAnalyzeWithAgentStockName(unittest.TestCase):
                 success=True,
                 content="{}",
                 dashboard={
-                    "stock_name": "科创芯片ETF",
+                    "stock_name": "STAR chipETF",
                     "sentiment_score": 78,
-                    "trend_prediction": "震荡偏多",
-                    "operation_advice": "持有",
+                    "trend_prediction": "oscillationbiasedmultiple",
+                    "operation_advice": "hold",
                     "decision_type": "hold",
                 },
                 provider="gemini",
@@ -581,21 +581,21 @@ class TestAnalyzeWithAgentStockName(unittest.TestCase):
                 code="588200",
                 report_type=ReportType.SIMPLE,
                 query_id="q-news",
-                stock_name="股票588200",
+                stock_name="stock588200",
                 realtime_quote=None,
                 chip_data=None
             )
 
             self.assertIsNotNone(result)
-            self.assertEqual(result.name, "科创芯片ETF")
+            self.assertEqual(result.name, "STAR chipETF")
             pipeline.search_service.search_stock_news.assert_called_once_with(
                 stock_code="588200",
-                stock_name="科创芯片ETF",
+                stock_name="STAR chipETF",
                 max_results=5
             )
             pipeline.db.save_news_intel.assert_called_once()
             saved_kwargs = pipeline.db.save_news_intel.call_args.kwargs
-            self.assertEqual(saved_kwargs["name"], "科创芯片ETF")
+            self.assertEqual(saved_kwargs["name"], "STAR chipETF")
 
 
 # ============================================================
@@ -659,7 +659,7 @@ class TestAgentConstructionChain(unittest.TestCase):
         skill_manager = SkillManager()
         test_skill = Skill(
             name="test_skill",
-            display_name="测试策略",
+            display_name="testingstrategy",
             description="A test skill",
             instructions="Test instructions for analysis.",
             category="trend",
@@ -668,7 +668,7 @@ class TestAgentConstructionChain(unittest.TestCase):
         skill_manager.register(test_skill)
         skill_manager.activate(["test_skill"])
         instructions = skill_manager.get_skill_instructions()
-        self.assertIn("测试策略", instructions)
+        self.assertIn("testingstrategy", instructions)
 
         # Build LLM adapter with mocked config (no real API keys)
         mock_cfg = MagicMock()
@@ -813,9 +813,9 @@ class TestSafeInt(unittest.TestCase):
         self.assertEqual(safe_int("80"), 80)
 
     def test_string_with_unit(self):
-        """LLM may return '80分' instead of 80."""
+        """LLM may return '80minute' instead of 80."""
         safe_int = self._get_safe_int()
-        self.assertEqual(safe_int("80分"), 80)
+        self.assertEqual(safe_int("80minute"), 80)
 
     def test_string_with_percent(self):
         safe_int = self._get_safe_int()
@@ -868,9 +868,9 @@ class TestSkillActivation(unittest.TestCase):
 
         manager = SkillManager()
         # Create test skills instead of importing deleted Python modules
-        skill1 = Skill(name="dragon_head", display_name="龙头策略",
+        skill1 = Skill(name="dragon_head", display_name="leading stockstrategy",
                        description="test", instructions="test")
-        skill2 = Skill(name="shrink_pullback", display_name="缩量回踩",
+        skill2 = Skill(name="shrink_pullback", display_name="volume contraction pullback",
                        description="test", instructions="test")
         manager.register(skill1)
         manager.register(skill2)
@@ -883,11 +883,11 @@ class TestSkillActivation(unittest.TestCase):
         from src.agent.skills.base import SkillManager, Skill
 
         manager = SkillManager()
-        skill1 = Skill(name="dragon_head", display_name="龙头策略",
+        skill1 = Skill(name="dragon_head", display_name="leading stockstrategy",
                        description="test", instructions="test")
-        skill2 = Skill(name="shrink_pullback", display_name="缩量回踩",
+        skill2 = Skill(name="shrink_pullback", display_name="volume contraction pullback",
                        description="test", instructions="test")
-        skill3 = Skill(name="volume_breakout", display_name="放量突破",
+        skill3 = Skill(name="volume_breakout", display_name="volume increasebreakout",
                        description="test", instructions="test")
         manager.register(skill1)
         manager.register(skill2)
@@ -945,15 +945,15 @@ class TestSkillActivation(unittest.TestCase):
             from src.enums import ReportType
             pipeline = StockAnalysisPipeline(config=mock_cfg)
 
-            # Dashboard with "80分" instead of 80
+            # Dashboard with "80minute" instead of 80
             agent_result = AgentResult(
                 success=True,
                 content="{}",
                 dashboard={
                     "stock_name": "TestCo",
-                    "sentiment_score": "80分",
-                    "trend_prediction": "看多",
-                    "operation_advice": "买入",
+                    "sentiment_score": "80minute",
+                    "trend_prediction": "bullish",
+                    "operation_advice": "buy",
                     "decision_type": "buy",
                 },
                 provider="gemini",

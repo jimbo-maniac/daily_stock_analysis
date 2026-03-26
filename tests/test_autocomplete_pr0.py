@@ -24,13 +24,13 @@ class TestAnalyzeRequest:
         request = AnalyzeRequest(
             stock_code="600519",
             async_mode=True,
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
         )
         assert request.stock_code == "600519"
-        assert request.stock_name == "贵州茅台"
-        assert request.original_query == "茅台"
+        assert request.stock_name == "Kweichow Moutai"
+        assert request.original_query == "Maotai"
         assert request.selection_source == "autocomplete"
 
     def test_analyze_request_backward_compatible(self):
@@ -59,12 +59,12 @@ class TestAnalyzeRequest:
         request = AnalyzeRequest(
             stock_codes=["600519", "000001"],
             async_mode=True,
-            stock_name="批量股票",
+            stock_name="batchstock",
             original_query="600519,000001",
             selection_source="import",
         )
         assert request.stock_codes == ["600519", "000001"]
-        assert request.stock_name == "批量股票"
+        assert request.stock_name == "batchstock"
         assert request.original_query == "600519,000001"
         assert request.selection_source == "import"
 
@@ -77,14 +77,14 @@ class TestTaskInfo:
         task = TaskInfo(
             task_id="test123",
             stock_code="600519",
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
         )
         d = task.to_dict()
         assert "original_query" in d
         assert "selection_source" in d
-        assert d["original_query"] == "茅台"
+        assert d["original_query"] == "Maotai"
         assert d["selection_source"] == "autocomplete"
 
     def test_task_info_backward_compatible(self):
@@ -102,12 +102,12 @@ class TestTaskInfo:
         task = TaskInfo(
             task_id="test123",
             stock_code="600519",
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
         )
         copied = task.copy()
-        assert copied.original_query == "茅台"
+        assert copied.original_query == "Maotai"
         assert copied.selection_source == "autocomplete"
 
 
@@ -137,13 +137,13 @@ class TestTaskQueue:
         queue = self._build_queue()
         tasks, _duplicates = queue.submit_tasks_batch(
             stock_codes=["600519"],
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
         )
         assert len(tasks) == 1
-        assert tasks[0].stock_name == "贵州茅台"
-        assert tasks[0].original_query == "茅台"
+        assert tasks[0].stock_name == "Kweichow Moutai"
+        assert tasks[0].original_query == "Maotai"
         assert tasks[0].selection_source == "autocomplete"
 
     def test_task_queue_backward_compatible(self):
@@ -161,13 +161,13 @@ class TestTaskQueue:
         queue = self._build_queue()
         tasks, _duplicates = queue.submit_tasks_batch(
             stock_codes=["600519", "000001"],
-            stock_name="批量股票",
+            stock_name="batchstock",
             original_query="600519,000001",
             selection_source="import",
         )
         assert len(tasks) == 2
         for task in tasks:
-            assert task.stock_name == "批量股票"
+            assert task.stock_name == "batchstock"
             assert task.original_query == "600519,000001"
             assert task.selection_source == "import"
 
@@ -179,8 +179,8 @@ class TestTaskQueue:
         # First submission
         tasks1, dups1 = queue.submit_tasks_batch(
             stock_codes=[stock_code],
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
         )
         assert len(tasks1) == 1
@@ -189,8 +189,8 @@ class TestTaskQueue:
         # Second submission (should be rejected)
         tasks2, dups2 = queue.submit_tasks_batch(
             stock_codes=[stock_code],
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="manual",  # Rejection still applies even if selection_source differs
         )
         assert len(tasks2) == 0
@@ -219,8 +219,8 @@ class TestIntegration:
         request = AnalyzeRequest(
             stock_code="600519.SH",
             async_mode=True,
-            stock_name="贵州茅台",
-            original_query="茅台",
+            stock_name="Kweichow Moutai",
+            original_query="Maotai",
             selection_source="autocomplete",
             report_type="detailed",
         )
@@ -239,8 +239,8 @@ class TestIntegration:
         assert len(tasks) == 1
         task = tasks[0]
         assert task.stock_code == "600519.SH"
-        assert task.stock_name == "贵州茅台"
-        assert task.original_query == "茅台"
+        assert task.stock_name == "Kweichow Moutai"
+        assert task.original_query == "Maotai"
         assert task.selection_source == "autocomplete"
         assert task.report_type == "detailed"
 

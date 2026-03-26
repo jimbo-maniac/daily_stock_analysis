@@ -51,7 +51,7 @@ Requirements:
 """
             if report_language == "en":
                 return prompt + "\nAlways answer in English.\n"
-            return prompt + "\n默认使用中文回答。\n"
+            return prompt + "\ndefaultuseChineseanswer。\n"
 
         skills = ""
         if self.skill_instructions:

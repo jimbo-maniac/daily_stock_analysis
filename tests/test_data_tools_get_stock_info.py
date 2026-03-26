@@ -44,12 +44,12 @@ class _DummyManager:
             "boards": {
                 "status": "ok",
                 "data": {
-                    "top": [{"name": "白酒", "change_pct": 2.3}],
-                    "bottom": [{"name": "煤炭", "change_pct": -1.7}],
+                    "top": [{"name": "baijiu", "change_pct": 2.3}],
+                    "bottom": [{"name": "coal", "change_pct": -1.7}],
                 },
             },
         }
-        self._belong_boards = [{"name": "白酒"}, {"name": "消费"}]
+        self._belong_boards = [{"name": "baijiu"}, {"name": "consumption"}]
 
     def get_fundamental_context(self, _stock_code: str):
         return self._context
@@ -61,7 +61,7 @@ class _DummyManager:
         return self._belong_boards
 
     def get_stock_name(self, _stock_code: str):
-        return "贵州茅台"
+        return "Kweichow Moutai"
 
 
 class TestGetStockInfoContract(unittest.TestCase):
@@ -70,7 +70,7 @@ class TestGetStockInfoContract(unittest.TestCase):
         with patch("src.agent.tools.data_tools._get_fetcher_manager", return_value=manager):
             result = _handle_get_stock_info("600519")
 
-        self.assertEqual(result["name"], "贵州茅台")
+        self.assertEqual(result["name"], "Kweichow Moutai")
         self.assertEqual(result["code"], "600519")
         self.assertEqual(result["pe_ratio"], 12.3)
         self.assertEqual(result["pb_ratio"], 2.1)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-枚举类型定义
+Enum type definitions
 ===================================
 
-集中管理系统中使用的枚举类型，提供类型安全和代码可读性。
+Centrally manages enum types used in the system, providing type safety and code readability.
 """
 
 from enum import Enum
@@ -12,25 +12,25 @@ from enum import Enum
 
 class ReportType(str, Enum):
     """
-    报告类型枚举
+    Report type enum
 
-    用于 API 触发分析时选择推送的报告格式。
-    继承 str 使其可以直接与字符串比较和序列化。
+    Used to select the report format to push when API triggers analysis.
+    Inherits str to allow direct comparison and serialization with strings.
     """
-    SIMPLE = "simple"  # 精简报告：使用 generate_single_stock_report
-    FULL = "full"      # 完整报告：使用 generate_dashboard_report
-    BRIEF = "brief"    # 简洁模式：3-5 句话概括，适合移动端/推送
+    SIMPLE = "simple"  # Simple report: uses generate_single_stock_report
+    FULL = "full"      # Full report: uses generate_dashboard_report
+    BRIEF = "brief"    # Brief mode: 3-5 sentence summary, suitable for mobile/push
 
     @classmethod
     def from_str(cls, value: str) -> "ReportType":
         """
-        从字符串安全地转换为枚举值
-        
+        Safely converts a string to an enum value
+
         Args:
-            value: 字符串值
-            
+            value: String value
+
         Returns:
-            对应的枚举值，无效输入返回默认值 SIMPLE
+            Corresponding enum value, returns default SIMPLE for invalid input
         """
         try:
             normalized = value.lower().strip()
@@ -39,12 +39,12 @@ class ReportType(str, Enum):
             return cls(normalized)
         except (ValueError, AttributeError):
             return cls.SIMPLE
-    
+
     @property
     def display_name(self) -> str:
-        """获取用于显示的名称"""
+        """Get the display name"""
         return {
-            ReportType.SIMPLE: "精简报告",
-            ReportType.FULL: "完整报告",
-            ReportType.BRIEF: "简洁报告",
-        }.get(self, "精简报告")
+            ReportType.SIMPLE: "Simple Report",
+            ReportType.FULL: "Full Report",
+            ReportType.BRIEF: "Brief Report",
+        }.get(self, "Simple Report")

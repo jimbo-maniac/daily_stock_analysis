@@ -47,36 +47,36 @@ class TestIsValuePlaceholder(unittest.TestCase):
         self.assertTrue(_is_value_placeholder("na"))
 
     def test_data_missing_is_placeholder(self) -> None:
-        self.assertTrue(_is_value_placeholder("数据缺失"))
-        self.assertTrue(_is_value_placeholder("未知"))
+        self.assertTrue(_is_value_placeholder("datamissing"))
+        self.assertTrue(_is_value_placeholder("unknown"))
 
     def test_valid_values_not_placeholder(self) -> None:
         self.assertFalse(_is_value_placeholder(0.5))
         self.assertFalse(_is_value_placeholder("50%"))
         self.assertFalse(_is_value_placeholder("67.5%"))
         self.assertFalse(_is_value_placeholder(25.6))
-        self.assertFalse(_is_value_placeholder("健康"))
+        self.assertFalse(_is_value_placeholder("health"))
 
 
 class TestDeriveChipHealth(unittest.TestCase):
     """Tests for _derive_chip_health."""
 
     def test_high_profit_ratio_returns_jingti(self) -> None:
-        self.assertEqual(_derive_chip_health(0.95, 0.10), "警惕")
-        self.assertEqual(_derive_chip_health(0.9, 0.05), "警惕")
+        self.assertEqual(_derive_chip_health(0.95, 0.10), "beware")
+        self.assertEqual(_derive_chip_health(0.9, 0.05), "beware")
 
     def test_high_concentration_returns_jingti(self) -> None:
-        self.assertEqual(_derive_chip_health(0.5, 0.30), "警惕")
-        self.assertEqual(_derive_chip_health(0.3, 0.25), "警惕")
+        self.assertEqual(_derive_chip_health(0.5, 0.30), "beware")
+        self.assertEqual(_derive_chip_health(0.3, 0.25), "beware")
 
     def test_concentrated_moderate_profit_returns_jiankang(self) -> None:
-        self.assertEqual(_derive_chip_health(0.5, 0.10), "健康")
-        self.assertEqual(_derive_chip_health(0.6, 0.12), "健康")
-        self.assertEqual(_derive_chip_health(0.3, 0.14), "健康")
+        self.assertEqual(_derive_chip_health(0.5, 0.10), "health")
+        self.assertEqual(_derive_chip_health(0.6, 0.12), "health")
+        self.assertEqual(_derive_chip_health(0.3, 0.14), "health")
 
     def test_otherwise_returns_yiban(self) -> None:
-        self.assertEqual(_derive_chip_health(0.2, 0.20), "一般")
-        self.assertEqual(_derive_chip_health(0.5, 0.18), "一般")
+        self.assertEqual(_derive_chip_health(0.2, 0.20), "general")
+        self.assertEqual(_derive_chip_health(0.5, 0.18), "general")
 
 
 class TestBuildChipStructureFromData(unittest.TestCase):
@@ -93,7 +93,7 @@ class TestBuildChipStructureFromData(unittest.TestCase):
         self.assertEqual(out["profit_ratio"], "56.7%")
         self.assertEqual(out["avg_cost"], 1850.5)
         self.assertEqual(out["concentration"], "12.00%")
-        self.assertEqual(out["chip_health"], "健康")
+        self.assertEqual(out["chip_health"], "health")
 
     def test_from_dict(self) -> None:
         d = {"profit_ratio": 0.9, "avg_cost": 100.0, "concentration_90": 0.08}
@@ -101,7 +101,7 @@ class TestBuildChipStructureFromData(unittest.TestCase):
         self.assertEqual(out["profit_ratio"], "90.0%")
         self.assertEqual(out["avg_cost"], 100.0)
         self.assertEqual(out["concentration"], "8.00%")
-        self.assertEqual(out["chip_health"], "警惕")
+        self.assertEqual(out["chip_health"], "beware")
 
     def test_dict_with_string_values(self) -> None:
         d = {"profit_ratio": "0.5", "avg_cost": "25.6", "concentration_90": "0.15"}
@@ -127,11 +127,11 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
     def _make_result(self, dashboard: dict = None) -> AnalysisResult:
         return AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
-            analysis_summary="稳健",
+            operation_advice="hold",
+            analysis_summary="steady",
             decision_type="hold",
             dashboard=dashboard,
         )
@@ -164,7 +164,7 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
         self.assertEqual(cs["profit_ratio"], "67.0%")
         self.assertEqual(cs["avg_cost"], 1850.0)
         self.assertEqual(cs["concentration"], "11.00%")
-        self.assertEqual(cs["chip_health"], "健康")
+        self.assertEqual(cs["chip_health"], "health")
 
     def test_merge_fill_partial_placeholder(self) -> None:
         result = self._make_result(
@@ -180,7 +180,7 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
         self.assertEqual(cs["profit_ratio"], "65.0%")  # LLM value kept
         self.assertEqual(cs["avg_cost"], 1850.0)  # filled from chip
         self.assertEqual(cs["concentration"], "11.00%")  # filled from chip
-        self.assertEqual(cs["chip_health"], "健康")  # filled from chip
+        self.assertEqual(cs["chip_health"], "health")  # filled from chip
 
     def test_dashboard_none_initialized(self) -> None:
         result = self._make_result(dashboard=None)
@@ -189,7 +189,7 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
         self.assertIsNotNone(result.dashboard)
         cs = result.dashboard["data_perspective"]["chip_structure"]
         self.assertEqual(cs["profit_ratio"], "67.0%")
-        self.assertEqual(cs["chip_health"], "健康")
+        self.assertEqual(cs["chip_health"], "health")
 
     def test_no_overwrite_valid_llm_values(self) -> None:
         result = self._make_result(
@@ -199,7 +199,7 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
                         "profit_ratio": "70.0%",
                         "avg_cost": 1900.0,
                         "concentration": "10.00%",
-                        "chip_health": "健康",
+                        "chip_health": "health",
                     }
                 }
             }
@@ -210,12 +210,12 @@ class TestFillChipStructureIfNeeded(unittest.TestCase):
         self.assertEqual(cs["profit_ratio"], "70.0%")
         self.assertEqual(cs["avg_cost"], 1900.0)
         self.assertEqual(cs["concentration"], "10.00%")
-        self.assertEqual(cs["chip_health"], "健康")
+        self.assertEqual(cs["chip_health"], "health")
 
     def test_data_perspective_null_handled(self) -> None:
         """When LLM returns data_perspective: null, fill should still work."""
         result = self._make_result(
-            dashboard={"data_perspective": None, "core_conclusion": {"one_sentence": "观望"}}
+            dashboard={"data_perspective": None, "core_conclusion": {"one_sentence": "wait and see"}}
         )
         chip = self._make_chip()
         fill_chip_structure_if_needed(result, chip)

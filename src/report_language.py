@@ -25,215 +25,215 @@ _REPORT_LANGUAGE_ALIASES = {
 }
 
 _OPERATION_ADVICE_CANONICAL_MAP = {
-    "强烈买入": "strong_buy",
+    "strong buy": "strong_buy",
     "strong buy": "strong_buy",
     "strong_buy": "strong_buy",
-    "买入": "buy",
     "buy": "buy",
-    "加仓": "buy",
+    "buy": "buy",
+    "add to position": "buy",
     "accumulate": "buy",
     "add position": "buy",
-    "持有": "hold",
     "hold": "hold",
-    "观望": "watch",
+    "hold": "hold",
+    "wait and see": "watch",
     "watch": "watch",
     "wait": "watch",
     "wait and see": "watch",
-    "减仓": "reduce",
+    "reduce position": "reduce",
     "reduce": "reduce",
     "trim": "reduce",
-    "卖出": "sell",
     "sell": "sell",
-    "强烈卖出": "strong_sell",
+    "sell": "sell",
+    "strong sell": "strong_sell",
     "strong sell": "strong_sell",
     "strong_sell": "strong_sell",
 }
 
 _OPERATION_ADVICE_TRANSLATIONS = {
-    "strong_buy": {"zh": "强烈买入", "en": "Strong Buy"},
-    "buy": {"zh": "买入", "en": "Buy"},
-    "hold": {"zh": "持有", "en": "Hold"},
-    "watch": {"zh": "观望", "en": "Watch"},
-    "reduce": {"zh": "减仓", "en": "Reduce"},
-    "sell": {"zh": "卖出", "en": "Sell"},
-    "strong_sell": {"zh": "强烈卖出", "en": "Strong Sell"},
+    "strong_buy": {"zh": "strong buy", "en": "Strong Buy"},
+    "buy": {"zh": "buy", "en": "Buy"},
+    "hold": {"zh": "hold", "en": "Hold"},
+    "watch": {"zh": "wait and see", "en": "Watch"},
+    "reduce": {"zh": "reduce position", "en": "Reduce"},
+    "sell": {"zh": "sell", "en": "Sell"},
+    "strong_sell": {"zh": "strong sell", "en": "Strong Sell"},
 }
 
 _TREND_PREDICTION_CANONICAL_MAP = {
-    "强烈看多": "strong_bullish",
+    "strongly bullish": "strong_bullish",
     "strong bullish": "strong_bullish",
     "very bullish": "strong_bullish",
-    "看多": "bullish",
+    "bullish": "bullish",
     "bullish": "bullish",
     "uptrend": "bullish",
-    "震荡": "sideways",
+    "oscillation": "sideways",
     "neutral": "sideways",
     "sideways": "sideways",
     "range-bound": "sideways",
-    "看空": "bearish",
+    "bearish": "bearish",
     "bearish": "bearish",
     "downtrend": "bearish",
-    "强烈看空": "strong_bearish",
+    "strongly bearish": "strong_bearish",
     "strong bearish": "strong_bearish",
     "very bearish": "strong_bearish",
 }
 
 _TREND_PREDICTION_TRANSLATIONS = {
-    "strong_bullish": {"zh": "强烈看多", "en": "Strong Bullish"},
-    "bullish": {"zh": "看多", "en": "Bullish"},
-    "sideways": {"zh": "震荡", "en": "Sideways"},
-    "bearish": {"zh": "看空", "en": "Bearish"},
-    "strong_bearish": {"zh": "强烈看空", "en": "Strong Bearish"},
+    "strong_bullish": {"zh": "strongly bullish", "en": "Strong Bullish"},
+    "bullish": {"zh": "bullish", "en": "Bullish"},
+    "sideways": {"zh": "oscillation", "en": "Sideways"},
+    "bearish": {"zh": "bearish", "en": "Bearish"},
+    "strong_bearish": {"zh": "strongly bearish", "en": "Strong Bearish"},
 }
 
 _CONFIDENCE_LEVEL_CANONICAL_MAP = {
-    "高": "high",
     "high": "high",
-    "中": "medium",
+    "high": "high",
+    "in": "medium",
     "medium": "medium",
     "med": "medium",
-    "低": "low",
+    "low": "low",
     "low": "low",
 }
 
 _CONFIDENCE_LEVEL_TRANSLATIONS = {
-    "high": {"zh": "高", "en": "High"},
-    "medium": {"zh": "中", "en": "Medium"},
-    "low": {"zh": "低", "en": "Low"},
+    "high": {"zh": "high", "en": "High"},
+    "medium": {"zh": "in", "en": "Medium"},
+    "low": {"zh": "low", "en": "Low"},
 }
 
 _CHIP_HEALTH_CANONICAL_MAP = {
-    "健康": "healthy",
+    "health": "healthy",
     "healthy": "healthy",
-    "一般": "average",
+    "general": "average",
     "average": "average",
-    "警惕": "caution",
+    "beware": "caution",
     "caution": "caution",
 }
 
 _CHIP_HEALTH_TRANSLATIONS = {
-    "healthy": {"zh": "健康", "en": "Healthy"},
-    "average": {"zh": "一般", "en": "Average"},
-    "caution": {"zh": "警惕", "en": "Caution"},
+    "healthy": {"zh": "health", "en": "Healthy"},
+    "average": {"zh": "general", "en": "Average"},
+    "caution": {"zh": "beware", "en": "Caution"},
 }
 
 _BIAS_STATUS_CANONICAL_MAP = {
-    "安全": "safe",
     "safe": "safe",
-    "警戒": "caution",
-    "警惕": "caution",
+    "safe": "safe",
+    "alert": "caution",
+    "beware": "caution",
     "caution": "caution",
-    "危险": "danger",
+    "dangerous": "danger",
     "risk": "danger",
     "danger": "danger",
 }
 
 _BIAS_STATUS_TRANSLATIONS = {
-    "safe": {"zh": "安全", "en": "Safe"},
-    "caution": {"zh": "警戒", "en": "Caution"},
-    "danger": {"zh": "危险", "en": "Danger"},
+    "safe": {"zh": "safe", "en": "Safe"},
+    "caution": {"zh": "alert", "en": "Caution"},
+    "danger": {"zh": "dangerous", "en": "Danger"},
 }
 
 _PLACEHOLDER_BY_LANGUAGE = {
-    "zh": "待补充",
+    "zh": "to be filled",
     "en": "TBD",
 }
 
 _UNKNOWN_BY_LANGUAGE = {
-    "zh": "未知",
+    "zh": "unknown",
     "en": "Unknown",
 }
 
 _NO_DATA_BY_LANGUAGE = {
-    "zh": "数据缺失",
+    "zh": "datamissing",
     "en": "Data unavailable",
 }
 
 _GENERIC_STOCK_NAME_BY_LANGUAGE = {
-    "zh": "待确认股票",
+    "zh": "pendingconfirmstock",
     "en": "Unnamed Stock",
 }
 
 _REPORT_LABELS: Dict[str, Dict[str, str]] = {
     "zh": {
-        "dashboard_title": "决策仪表盘",
-        "brief_title": "决策简报",
-        "analyzed_prefix": "共分析",
-        "stock_unit": "只股票",
-        "stock_unit_compact": "只",
-        "buy_label": "买入",
-        "watch_label": "观望",
-        "sell_label": "卖出",
-        "summary_heading": "分析结果摘要",
-        "info_heading": "重要信息速览",
-        "sentiment_summary_label": "舆情情绪",
-        "earnings_outlook_label": "业绩预期",
-        "risk_alerts_label": "风险警报",
-        "positive_catalysts_label": "利好催化",
-        "latest_news_label": "最新动态",
-        "core_conclusion_heading": "核心结论",
-        "one_sentence_label": "一句话决策",
-        "time_sensitivity_label": "时效性",
-        "default_time_sensitivity": "本周内",
-        "position_status_label": "持仓情况",
-        "action_advice_label": "操作建议",
-        "no_position_label": "空仓者",
-        "has_position_label": "持仓者",
-        "continue_holding": "继续持有",
-        "market_snapshot_heading": "当日行情",
-        "close_label": "收盘",
-        "prev_close_label": "昨收",
-        "open_label": "开盘",
-        "high_label": "最高",
-        "low_label": "最低",
-        "change_pct_label": "涨跌幅",
-        "change_amount_label": "涨跌额",
-        "amplitude_label": "振幅",
-        "volume_label": "成交量",
-        "amount_label": "成交额",
-        "current_price_label": "当前价",
-        "volume_ratio_label": "量比",
-        "turnover_rate_label": "换手率",
-        "source_label": "行情来源",
-        "data_perspective_heading": "数据透视",
-        "ma_alignment_label": "均线排列",
-        "bullish_alignment_label": "多头排列",
-        "yes_label": "是",
-        "no_label": "否",
-        "trend_strength_label": "趋势强度",
-        "price_metrics_label": "价格指标",
+        "dashboard_title": "decisiondashboard",
+        "brief_title": "decisionbriefing",
+        "analyzed_prefix": "totalanalyzing",
+        "stock_unit": "onlystock",
+        "stock_unit_compact": "only",
+        "buy_label": "buy",
+        "watch_label": "wait and see",
+        "sell_label": "sell",
+        "summary_heading": "analysis resultsummary",
+        "info_heading": "Importantinfoquick overview",
+        "sentiment_summary_label": "public sentimentsentiment",
+        "earnings_outlook_label": "performanceexpected",
+        "risk_alerts_label": "riskalert",
+        "positive_catalysts_label": "positive catalyst",
+        "latest_news_label": "latestdynamic",
+        "core_conclusion_heading": "coreconclusion",
+        "one_sentence_label": "one sentencedecision",
+        "time_sensitivity_label": "wheneffect-ness",
+        "default_time_sensitivity": "within this week",
+        "position_status_label": "holdingsituation",
+        "action_advice_label": "operationrecommended",
+        "no_position_label": "no positioner",
+        "has_position_label": "holdinger",
+        "continue_holding": "continuinghold",
+        "market_snapshot_heading": "todayquote/market data",
+        "close_label": "close",
+        "prev_close_label": "yesterday close",
+        "open_label": "open",
+        "high_label": "highest",
+        "low_label": "lowest",
+        "change_pct_label": "price change percentage",
+        "change_amount_label": "price change amount",
+        "amplitude_label": "amplitude",
+        "volume_label": "trading volume",
+        "amount_label": "trading amount",
+        "current_price_label": "currentprice",
+        "volume_ratio_label": "volume ratio",
+        "turnover_rate_label": "turnover rate",
+        "source_label": "quote/market datasource",
+        "data_perspective_heading": "dataperspective",
+        "ma_alignment_label": "moving averagearrange",
+        "bullish_alignment_label": "long positionarrange",
+        "yes_label": "is",
+        "no_label": "no",
+        "trend_strength_label": "trendintensity",
+        "price_metrics_label": "priceindicator",
         "ma5_label": "MA5",
         "ma10_label": "MA10",
         "ma20_label": "MA20",
-        "bias_ma5_label": "乖离率(MA5)",
-        "support_level_label": "支撑位",
-        "resistance_level_label": "压力位",
-        "chip_label": "筹码",
-        "battle_plan_heading": "作战计划",
-        "ideal_buy_label": "理想买入点",
-        "secondary_buy_label": "次优买入点",
-        "stop_loss_label": "止损位",
-        "take_profit_label": "目标位",
-        "suggested_position_label": "仓位建议",
-        "entry_plan_label": "建仓策略",
-        "risk_control_label": "风控策略",
-        "checklist_heading": "检查清单",
-        "failed_checks_heading": "检查未通过项",
-        "history_compare_heading": "历史信号对比",
-        "time_label": "时间",
-        "score_label": "评分",
-        "advice_label": "建议",
-        "trend_label": "趋势",
-        "generated_at_label": "报告生成时间",
-        "report_time_label": "生成时间",
-        "no_results": "无分析结果",
-        "report_title": "股票分析报告",
-        "avg_score_label": "均分",
-        "action_points_heading": "操作点位",
-        "position_advice_heading": "持仓建议",
-        "analysis_model_label": "分析模型",
-        "not_investment_advice": "AI生成，仅供参考，不构成投资建议",
-        "details_report_hint": "详细报告见",
+        "bias_ma5_label": "BIAS ratio(MA5)",
+        "support_level_label": "support level",
+        "resistance_level_label": "stressdigit",
+        "chip_label": "chip",
+        "battle_plan_heading": "action plan",
+        "ideal_buy_label": "ideal buy point",
+        "secondary_buy_label": "secondary buy point",
+        "stop_loss_label": "stop lossdigit",
+        "take_profit_label": "target level",
+        "suggested_position_label": "positionrecommended",
+        "entry_plan_label": "open positionstrategy",
+        "risk_control_label": "risk controlstrategy",
+        "checklist_heading": "checklist",
+        "failed_checks_heading": "checknotviaitem",
+        "history_compare_heading": "historicalsignaltocompared to",
+        "time_label": "time",
+        "score_label": "score",
+        "advice_label": "recommended",
+        "trend_label": "trend",
+        "generated_at_label": "report generationtime",
+        "report_time_label": "generatingtime",
+        "no_results": "noanalysis result",
+        "report_title": "stockanalysis report",
+        "avg_score_label": "averageminute",
+        "action_points_heading": "operationpointdigit",
+        "position_advice_heading": "holdingrecommended",
+        "analysis_model_label": "analyzingmodel",
+        "not_investment_advice": "AIgenerating，onlyprovidereference，notconstituteinvestmentrecommended",
+        "details_report_hint": "detailedreportsee",
     },
     "en": {
         "dashboard_title": "Decision Dashboard",
@@ -389,14 +389,14 @@ def _is_placeholder_stock_name(value: Any, code: Any = None) -> bool:
     lowered = text.lower()
     if lowered in {"n/a", "na", "none", "null", "unknown"}:
         return True
-    if text in {"-", "—", "未知", "待补充"}:
+    if text in {"-", "—", "unknown", "to be filled"}:
         return True
 
     code_text = str(code or "").strip()
     if code_text and lowered == code_text.lower():
         return True
 
-    return text.startswith("股票")
+    return text.startswith("stock")
 
 
 def _translate_from_map(
@@ -547,11 +547,11 @@ def get_sentiment_label(score: int, language: Optional[str]) -> str:
         return "Very Bearish"
 
     if score >= 80:
-        return "极度乐观"
+        return "extremelyoptimistic"
     if score >= 60:
-        return "乐观"
+        return "optimistic"
     if score >= 40:
-        return "中性"
+        return "neutral"
     if score >= 20:
-        return "悲观"
-    return "极度悲观"
+        return "pessimistic"
+    return "extremelypessimistic"

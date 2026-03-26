@@ -4,7 +4,7 @@ Trading skill base classes and SkillManager.
 
 Skills are pluggable trading analysis modules defined in **natural language**
 (YAML files). Each skill describes a common or custom trading pattern
-(e.g., 龙头策略, 缩量回踩, 均线金叉) used for analysis and push notifications.
+(e.g., leading stockstrategy, volume contraction pullback, moving averagegolden cross) used for analysis and push notifications.
 
 Users can write custom skills by creating a YAML file — no Python code needed.
 The built-in YAML files still live under ``strategies/`` for compatibility.
@@ -33,10 +33,10 @@ class Skill:
 
     Attributes:
         name: Unique strategy identifier (e.g., "dragon_head").
-        display_name: Human-readable name (e.g., "龙头策略").
+        display_name: Human-readable name (e.g., "leading stockstrategy").
         description: Brief description of when to apply this strategy.
         instructions: Detailed natural language instructions injected into the system prompt.
-        category: Skill category — "trend" (趋势), "pattern" (形态), "reversal" (反转), "framework" (框架).
+        category: Skill category — "trend" (trend), "pattern" (pattern), "reversal" (reverse), "framework" (framework).
         core_rules: List of core trading rule numbers this strategy relates to (1-7).
         required_tools: List of tool names this skill depends on.
         allowed_tools: Optional allowlist metadata from SKILL.md frontmatter.
@@ -441,7 +441,7 @@ class SkillManager:
             return ""
 
         # Group by category
-        categories = {"trend": "趋势", "pattern": "形态", "reversal": "反转", "framework": "框架"}
+        categories = {"trend": "trend", "pattern": "pattern", "reversal": "reverse", "framework": "framework"}
         grouped: Dict[str, List[Skill]] = {}
         for skill in active:
             cat = skill.category or "trend"
@@ -456,17 +456,17 @@ class SkillManager:
             if not skills_in_cat:
                 continue
             cat_label = categories.get(cat_key, cat_key)
-            parts.append(f"#### {cat_label}类技能\n")
+            parts.append(f"#### {cat_label}classskill\n")
             for skill in skills_in_cat:
                 rules_ref = ""
                 if skill.core_rules:
-                    rules_ref = f"（关联核心理念：第{'、'.join(str(r) for r in skill.core_rules)}条）"
+                    rules_ref = f"（associationcorereasonconcept：the{'、'.join(str(r) for r in skill.core_rules)}items）"
                 support_ref = ""
                 if skill.bundle_dir and skill.entrypoint.endswith("SKILL.md"):
                     support_ref = "（bundle）"
                 parts.append(
-                    f"### 技能 {idx}: {skill.display_name} {rules_ref}{support_ref}\n\n"
-                    f"**适用场景**: {skill.description}\n\n"
+                    f"### skill {idx}: {skill.display_name} {rules_ref}{support_ref}\n\n"
+                    f"**suitableusescenario**: {skill.description}\n\n"
                     f"{skill.instructions}\n"
                 )
                 idx += 1

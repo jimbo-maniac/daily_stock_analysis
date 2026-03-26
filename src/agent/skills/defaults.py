@@ -23,39 +23,39 @@ LEGACY_STRATEGY_AGENT_PREFIX = "strategy_"
 SKILL_CONSENSUS_AGENT_NAME = "skill_consensus"
 LEGACY_STRATEGY_CONSENSUS_AGENT_NAME = "strategy_consensus"
 
-CORE_TRADING_SKILL_POLICY_ZH = """## 默认技能基线（必须严格遵守）
+CORE_TRADING_SKILL_POLICY_ZH = """## defaultskillbaseline（muststrictcomply with）
 
-当前激活的 skills 可以补充细化分析视角，但默认风险控制和交易节奏必须遵守以下基线。
+currentactivated skills cansupplementdetail-izeanalyzingview ascorner，butdefaultriskcontrolandtraderhythmmustcomply withwithbelowbaseline。
 
-### 1. 严进策略（不追高）
-- **绝对不追高**：当股价偏离 MA5 超过 5% 时，坚决不买入
-- 乖离率 < 2%：最佳买点区间
-- 乖离率 2-5%：可小仓介入
-- 乖离率 > 5%：严禁追高！直接判定为"观望"
+### 1. strict entry strategy（don't chase highs）
+- **absolutelytodon't chase highs**：whenstock pricedeviation MA5 exceed 5% when，firmlynotbuy
+- BIAS ratio < 2%：best buy pointinterval
+- BIAS ratio 2-5%：can enter with small position
+- BIAS ratio > 5%：strictly prohibit chasing highs！directlydetermineas"wait and see"
 
-### 2. 趋势交易（顺势而为）
-- **多头排列必须条件**：MA5 > MA10 > MA20
-- 只做多头排列的股票，空头排列坚决不碰
-- 均线发散上行优于均线粘合
+### 2. trendtrade（following the trendas）
+- **long positionarrangemustitemsitems**：MA5 > MA10 > MA20
+- onlydolong positionarrangestock，short positionarrangefirmlynottouch
+- moving averagesendscattered upwardrowbetter thanmoving averageglue
 
-### 3. 效率优先（筹码结构）
-- 关注筹码集中度：90%集中度 < 15% 表示筹码集中
-- 获利比例分析：70-90% 获利盘时需警惕获利回吐
-- 平均成本与现价关系：现价高于平均成本 5-15% 为健康
+### 3. efficiency first（chip structure）
+- monitorchip concentration：90%concentration < 15% indicateschipsetin
+- profitproportionanalyzing：70-90% profitable positionswhenneedbewareprofitgive back
+- average costwithcurrent price relationship：current pricehighataverage cost 5-15% ashealth
 
-### 4. 买点偏好（回踩支撑）
-- **最佳买点**：缩量回踩 MA5 获得支撑
-- **次优买点**：回踩 MA10 获得支撑
-- **观望情况**：跌破 MA20 时观望
+### 4. buy point preference（pullbacksupport）
+- **best buy point**：volume contraction pullback MA5 get support
+- **timessuperiorbuypoint**：pullback MA10 get support
+- **wait and seesituation**：break below MA20 whenwait and see
 
-### 5. 风险排查重点
-- 减持公告、业绩预亏、监管处罚、行业政策利空、大额解禁
+### 5. risktroubleshootkey point
+- reduce holdingsannouncement、performancepre-loss、regulatory penalty、industrypolicynegative news、largeamountunlock
 
-### 6. 估值关注（PE/PB）
-- PE 明显偏高时需在风险点中说明
+### 6. estimatevaluemonitor（PE/PB）
+- PE obviously biasedhighwhenneedinriskpointinDescription
 
-### 7. 强势趋势股放宽
-- 强势趋势股可适当放宽乖离率要求，轻仓追踪但需设止损
+### 7. strongtrendstocksrelax
+- strongtrendstockscansuitablewhenrelaxBIAS rationeedrequest，lightpositiontrackbutneedsetstop loss
 """
 
 TECHNICAL_SKILL_RULES_EN = """## Default Skill Baseline

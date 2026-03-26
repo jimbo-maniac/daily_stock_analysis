@@ -126,7 +126,7 @@ def determine_market_and_type(code: str) -> tuple:
             # Four digits: likely a US symbol or special market code.
             return 'US', 'stock'
 
-    # 字母代码，美股或其他
+    # characterparentcode，US stockorother
     return 'US', 'stock'
 
 
@@ -141,7 +141,7 @@ def market_to_suffix(market: str) -> str:
         Market suffix
     """
     suffix_map = {
-        'CN': 'SH',  # 简化处理，默认上海
+        'CN': 'SH',  # simplifyprocessing，defaultShanghai
         'HK': 'HK',
         'US': 'US',
         'INDEX': 'SH',
@@ -193,31 +193,31 @@ def generate_aliases(name: str) -> List[str]:
     """
     aliases = []
 
-    # 常见简称映射
+    # normallyseeabbreviationmapping
     alias_map = {
-        '贵州茅台': ['茅台'],
-        '中国平安': ['平安'],
-        '平安银行': ['平银'],
-        '招商银行': ['招行'],
-        '五粮液': ['五粮'],
-        '宁德时代': ['宁德'],
-        '比亚迪': ['比亚'],
-        '工商银行': ['工行'],
-        '建设银行': ['建行'],
-        '农业银行': ['农行'],
-        '中国银行': ['中行'],
-        '交通银行': ['交行'],
-        '兴业银行': ['兴业'],
-        '浦发银行': ['浦发'],
-        '民生银行': ['民生'],
-        '中信证券': ['中信'],
-        '东方财富': ['东财'],
-        '海康威视': ['海康'],
-        '隆基绿能': ['隆基'],
-        '中国神华': ['神华'],
-        '长江电力': ['长电'],
-        '中国石化': ['石化'],
-        '中国石油': ['石油'],
+        'Kweichow Moutai': ['Maotai'],
+        'Ping An of China': ['Ping An'],
+        'Ping An Bank': ['Ping An Bank'],
+        'China Merchants Bank': ['inviterow'],
+        'Wuliangye': ['Wuliang'],
+        'CATL': ['Ningde'],
+        'BYD': ['Biya'],
+        'ICBC': ['Industrialrow'],
+        'Constructionbank': ['Constructionrow'],
+        'Agricultural Bank': ['Agriculturalrow'],
+        'Bank of China': ['inrow'],
+        'Bank of Communications': ['exchangerow'],
+        'Industrial Bank': ['Industrial'],
+        'SPDB': ['Pudongsend'],
+        'Minshengbank': ['Minsheng'],
+        'CITIC Securities': ['CITIC'],
+        'Eastmoney': ['Eastmoney'],
+        'Hikvision': ['Hikvision'],
+        'LONGi Green Energy': ['Longbase'],
+        'China Shenhua': ['Shenhua'],
+        'Yangtze Power': ['longElectric'],
+        'Sinopec': ['Petrochemical'],
+        'PetroChina': ['Petroleum'],
     }
 
     if name in alias_map:
@@ -255,31 +255,31 @@ def compress_index(index: List[Dict[str, Any]]) -> List[List]:
 
 def main():
     """Main function"""
-    print("开始生成股票索引...")
+    print("startinggeneratingstockindex...")
 
-    # 生成索引（MVP：使用现有映射）
+    # generatingindex（MVP：usecurrenthasmapping）
     index = generate_stock_index_from_map()
-    print(f"共生成 {len(index)} 条索引")
+    print(f"totalgenerating {len(index)} itemsindex")
 
-    # 输出路径
+    # outputpath
     output_path = Path(__file__).parent.parent / "apps" / "dsa-web" / "public" / "stocks.index.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # 压缩格式（减少文件大小）
+    # compressionformat（reducefilesize）
     compressed = compress_index(index)
 
-    # 写入文件
+    # writingfile
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(compressed, f, ensure_ascii=False, separators=(',', ':'))
 
     file_size = output_path.stat().st_size
-    print(f"索引已生成：{output_path}")
-    print(f"文件大小：{file_size / 1024:.2f} KB")
+    print(f"indexalreadygenerating：{output_path}")
+    print(f"filesize：{file_size / 1024:.2f} KB")
 
-    # 验证文件可读
+    # verificationfilecanread
     with open(output_path, 'r', encoding='utf-8') as f:
         test_data = json.load(f)
-        print(f"验证通过：{len(test_data)} 条记录")
+        print(f"verificationvia：{len(test_data)} itemsrecord")
 
     return 0
 

@@ -14,9 +14,9 @@ from src.report_language import (
 
 class ReportLanguageTestCase(unittest.TestCase):
     def test_get_signal_level_handles_compound_sell_advice(self) -> None:
-        signal_text, emoji, signal_tag = get_signal_level("卖出/观望", 60, "zh")
+        signal_text, emoji, signal_tag = get_signal_level("sell/wait and see", 60, "zh")
 
-        self.assertEqual(signal_text, "卖出")
+        self.assertEqual(signal_text, "sell")
         self.assertEqual(emoji, "🔴")
         self.assertEqual(signal_tag, "sell")
 
@@ -29,19 +29,19 @@ class ReportLanguageTestCase(unittest.TestCase):
 
     def test_get_localized_stock_name_replaces_placeholder_for_english(self) -> None:
         self.assertEqual(
-            get_localized_stock_name("股票AAPL", "AAPL", "en"),
+            get_localized_stock_name("stockAAPL", "AAPL", "en"),
             "Unnamed Stock",
         )
 
     def test_get_sentiment_label_preserves_higher_band_thresholds(self) -> None:
         self.assertEqual(get_sentiment_label(80, "en"), "Very Bullish")
         self.assertEqual(get_sentiment_label(60, "en"), "Bullish")
-        self.assertEqual(get_sentiment_label(40, "zh"), "中性")
-        self.assertEqual(get_sentiment_label(20, "zh"), "悲观")
+        self.assertEqual(get_sentiment_label(40, "zh"), "neutral")
+        self.assertEqual(get_sentiment_label(20, "zh"), "pessimistic")
 
     def test_bias_status_helpers_support_english_values(self) -> None:
         self.assertEqual(localize_bias_status("Safe", "en"), "Safe")
-        self.assertEqual(localize_bias_status("警戒", "en"), "Caution")
+        self.assertEqual(localize_bias_status("alert", "en"), "Caution")
         self.assertEqual(get_bias_status_emoji("Safe"), "✅")
         self.assertEqual(get_bias_status_emoji("Caution"), "⚠️")
 

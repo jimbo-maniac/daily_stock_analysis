@@ -21,7 +21,7 @@ class AnalyzerNewsPromptTestCase(unittest.TestCase):
 
         context = {
             "code": "600519",
-            "stock_name": "贵州茅台",
+            "stock_name": "Kweichow Moutai",
             "date": "2026-03-16",
             "today": {},
             "fundamental_context": {
@@ -38,14 +38,14 @@ class AnalyzerNewsPromptTestCase(unittest.TestCase):
             news_strategy_profile="medium",  # 7 days
         )
         with patch("src.analyzer.get_config", return_value=fake_cfg):
-            prompt = analyzer._format_prompt(context, "贵州茅台", news_context="news")
+            prompt = analyzer._format_prompt(context, "Kweichow Moutai", news_context="news")
 
-        self.assertIn("近7日的新闻搜索结果", prompt)
-        self.assertIn("每一条都必须带具体日期（YYYY-MM-DD）", prompt)
-        self.assertIn("超出近7日窗口的新闻一律忽略", prompt)
-        self.assertIn("时间未知、无法确定发布日期的新闻一律忽略", prompt)
-        self.assertIn("财报与分红（价值投资口径）", prompt)
-        self.assertIn("禁止编造", prompt)
+        self.assertIn("recent7daynewssearchresult", prompt)
+        self.assertIn("eachoneitemsallmustwithspecificdate（YYYY-MM-DD）", prompt)
+        self.assertIn("exceedrecent7daywindownewsuniformly ignore", prompt)
+        self.assertIn("timeunknown、cannot determinepublishdatenewsuniformly ignore", prompt)
+        self.assertIn("financial reportwithdividend（pricevalueinvestmentcaliber）", prompt)
+        self.assertIn("prohibitfabricate", prompt)
 
     def test_prompt_prefers_context_news_window_days(self) -> None:
         with patch.object(GeminiAnalyzer, "_init_litellm", return_value=None):
@@ -53,7 +53,7 @@ class AnalyzerNewsPromptTestCase(unittest.TestCase):
 
         context = {
             "code": "600519",
-            "stock_name": "贵州茅台",
+            "stock_name": "Kweichow Moutai",
             "date": "2026-03-16",
             "today": {},
             "news_window_days": 1,
@@ -63,10 +63,10 @@ class AnalyzerNewsPromptTestCase(unittest.TestCase):
             news_strategy_profile="long",  # 30 days if fallback is used
         )
         with patch("src.analyzer.get_config", return_value=fake_cfg):
-            prompt = analyzer._format_prompt(context, "贵州茅台", news_context="news")
+            prompt = analyzer._format_prompt(context, "Kweichow Moutai", news_context="news")
 
-        self.assertIn("近1日的新闻搜索结果", prompt)
-        self.assertIn("超出近1日窗口的新闻一律忽略", prompt)
+        self.assertIn("recent1daynewssearchresult", prompt)
+        self.assertIn("exceedrecent1daywindownewsuniformly ignore", prompt)
 
 
 if __name__ == "__main__":

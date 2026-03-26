@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-全局异常处理中间件
+globalabnormalprocessingmiddleware
 ===================================
 
-职责：
-1. 捕获未处理的异常
-2. 统一错误响应格式
-3. 记录错误日志
+Responsibilities:
+1. capturenotprocessingabnormal
+2. unifiederrorresponseformat
+3. recorderrorlog
 """
 
 import logging
@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
     """
-    全局异常处理中间件
+    globalabnormalprocessingmiddleware
     
-    捕获所有未处理的异常，返回统一格式的错误响应
+    captureallnotprocessingabnormal，returnunifiedformaterrorresponse
     """
     
     async def dispatch(
@@ -34,34 +34,34 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
         call_next: Callable
     ) -> Response:
         """
-        处理请求，捕获异常
+        processingrequest，captureabnormal
         
         Args:
-            request: 请求对象
-            call_next: 下一个处理器
+            request: requestobject
+            call_next: belowonecounthandler
             
         Returns:
-            Response: 响应对象
+            Response: responseobject
         """
         try:
             response = await call_next(request)
             return response
             
         except Exception as e:
-            # 记录错误日志
+            # recorderrorlog
             logger.error(
-                f"未处理的异常: {e}\n"
-                f"请求路径: {request.url.path}\n"
-                f"请求方法: {request.method}\n"
-                f"堆栈: {traceback.format_exc()}"
+                f"notprocessingabnormal: {e}\n"
+                f"requestpath: {request.url.path}\n"
+                f"request method: {request.method}\n"
+                f"heapstack: {traceback.format_exc()}"
             )
             
-            # 返回统一格式的错误响应
+            # returnunifiedformaterrorresponse
             return JSONResponse(
                 status_code=500,
                 content={
                     "error": "internal_error",
-                    "message": "服务器内部错误，请稍后重试",
+                    "message": "servicehandler internalerror，pleaseslightlyafterretry",
                     "detail": str(e) if logger.isEnabledFor(logging.DEBUG) else None
                 }
             )
@@ -69,26 +69,26 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
 
 def add_error_handlers(app) -> None:
     """
-    添加全局异常处理器
+    addglobalabnormalhandler
     
-    为 FastAPI 应用添加各类异常的处理器
+    as FastAPI applyaddeachclassabnormalhandler
     
     Args:
-        app: FastAPI 应用实例
+        app: FastAPI applyinstance
     """
     from fastapi import HTTPException
     from fastapi.exceptions import RequestValidationError
     
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
-        """处理 HTTP 异常"""
-        # 如果 detail 已经是 ErrorResponse 格式的 dict，直接使用
+        """processing HTTP abnormal"""
+        # if detail alreadythroughis ErrorResponse format dict，directlyuse
         if isinstance(exc.detail, dict) and "error" in exc.detail and "message" in exc.detail:
             return JSONResponse(
                 status_code=exc.status_code,
                 content=exc.detail
             )
-        # 否则将 detail 包装成 ErrorResponse 格式
+        # otherwisewill detail packageinstallbecome ErrorResponse format
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -100,29 +100,29 @@ def add_error_handlers(app) -> None:
     
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        """处理请求验证异常"""
+        """processingrequestverificationabnormal"""
         return JSONResponse(
             status_code=422,
             content={
                 "error": "validation_error",
-                "message": "请求参数验证失败",
+                "message": "requestparameterverificationfailed",
                 "detail": exc.errors()
             }
         )
     
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
-        """处理通用异常"""
+        """processinggenericabnormal"""
         logger.error(
-            f"未处理的异常: {exc}\n"
-            f"请求路径: {request.url.path}\n"
-            f"堆栈: {traceback.format_exc()}"
+            f"notprocessingabnormal: {exc}\n"
+            f"requestpath: {request.url.path}\n"
+            f"heapstack: {traceback.format_exc()}"
         )
         return JSONResponse(
             status_code=500,
             content={
                 "error": "internal_error",
-                "message": "服务器内部错误",
+                "message": "servicehandler internalerror",
                 "detail": None
             }
         )

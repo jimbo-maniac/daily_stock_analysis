@@ -55,7 +55,7 @@ class TestIsCodeLike:
 
     # --- Negative cases ---
     def test_plain_text(self):
-        assert is_code_like("贵州茅台") is False
+        assert is_code_like("Kweichow Moutai") is False
 
     def test_empty(self):
         assert is_code_like("") is False
@@ -110,7 +110,7 @@ class TestNormalizeCode:
         assert normalize_code("") is None
 
     def test_plain_text_returns_none(self):
-        assert normalize_code("贵州茅台") is None
+        assert normalize_code("Kweichow Moutai") is None
 
     def test_partial_prefix_no_digits_returns_none(self):
         # SH followed by wrong digit count

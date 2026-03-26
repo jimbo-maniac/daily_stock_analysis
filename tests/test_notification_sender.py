@@ -241,11 +241,11 @@ class TestEmailSender(unittest.TestCase):
             email_sender="a@qq.com",
             email_password="p",
             email_receivers=["b@qq.com"],
-            email_sender_name="daily_stock_analysis股票分析助手",
+            email_sender_name="daily_stock_analysisstockanalyzingassistant",
         )
         sender = EmailSender(cfg)
 
-        result = sender.send_to_email("body", subject="测试主题")
+        result = sender.send_to_email("body", subject="testingtopic")
 
         self.assertTrue(result)
         server = mock_smtp_ssl.return_value
@@ -255,7 +255,7 @@ class TestEmailSender(unittest.TestCase):
         self.assertEqual(addr, "a@qq.com")
         self.assertEqual(
             str(make_header(decode_header(realname))),
-            "daily_stock_analysis股票分析助手",
+            "daily_stock_analysisstockanalyzingassistant",
         )
         server.quit.assert_called_once()
 
@@ -265,7 +265,7 @@ class TestEmailSender(unittest.TestCase):
             email_sender="a@qq.com",
             email_password="p",
             email_receivers=["b@qq.com"],
-            email_sender_name="daily_stock_analysis股票分析助手",
+            email_sender_name="daily_stock_analysisstockanalyzingassistant",
         )
         sender = EmailSender(cfg)
 
@@ -279,7 +279,7 @@ class TestEmailSender(unittest.TestCase):
         self.assertEqual(addr, "a@qq.com")
         self.assertEqual(
             str(make_header(decode_header(realname))),
-            "daily_stock_analysis股票分析助手",
+            "daily_stock_analysisstockanalyzingassistant",
         )
         server.quit.assert_called_once()
 

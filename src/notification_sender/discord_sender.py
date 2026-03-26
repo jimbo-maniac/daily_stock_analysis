@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Discord 发送提醒服务
+Discord sendingreminderservice
 
-职责：
-1. 通过 webhook 或 Discord bot API 发送 Discord 消息
+Responsibilities:
+1. via webhook or Discord bot API sending Discord message
 """
 import logging
 import requests
@@ -19,10 +19,10 @@ class DiscordSender:
     
     def __init__(self, config: Config):
         """
-        初始化 Discord 配置
+        initializing Discord configuration
 
         Args:
-            config: 配置对象
+            config: configurationobject
         """
         self._discord_config = {
             'bot_token': getattr(config, 'discord_bot_token', None),
@@ -33,57 +33,57 @@ class DiscordSender:
         self._webhook_verify_ssl = getattr(config, 'webhook_verify_ssl', True)
     
     def _is_discord_configured(self) -> bool:
-        """检查 Discord 配置是否完整（支持 Bot 或 Webhook）"""
-        # 只要配置了 Webhook 或完整的 Bot Token+Channel，即视为可用
+        """check Discord configurationis complete（support Bot or Webhook）"""
+        # onlyneedconfiguration Webhook orcomplete Bot Token+Channel，i.e.view asasavailable
         bot_ok = bool(self._discord_config['bot_token'] and self._discord_config['channel_id'])
         webhook_ok = bool(self._discord_config['webhook_url'])
         return bot_ok or webhook_ok
     
     def send_to_discord(self, content: str) -> bool:
         """
-        推送消息到 Discord（支持 Webhook 和 Bot API）
+        pushmessageto Discord（support Webhook and Bot API）
         
         Args:
-            content: Markdown 格式的消息内容
+            content: Markdown formatmessagecontent
             
         Returns:
-            是否发送成功
+            whethersendingsuccessful
         """
-        # 分割内容，避免单条消息超过 Discord 限制
+        # splittingcontent，avoidsingle entrymessageexceed Discord constraint
         try:
             chunks = chunk_content_by_max_words(content, self._discord_max_words)
         except ValueError as e:
-            logger.error(f"分割 Discord 消息失败: {e}, 尝试整段发送。")
+            logger.error(f"splitting Discord messagefailed: {e}, tryentire segmentsending。")
             chunks = [content]
 
-        # 优先使用 Webhook（配置简单，权限低）
+        # prefer to use Webhook（configurationsimple，permissionlow）
         if self._discord_config['webhook_url']:
             return all(self._send_discord_webhook(chunk) for chunk in chunks)
 
-        # 其次使用 Bot API（权限高，需要 channel_id）
+        # itstimesuse Bot API（permissionhigh，need channel_id）
         if self._discord_config['bot_token'] and self._discord_config['channel_id']:
             return all(self._send_discord_bot(chunk) for chunk in chunks)
 
-        logger.warning("Discord 配置不完整，跳过推送")
+        logger.warning("Discord configurationincomplete，skippush")
         return False
 
   
     def _send_discord_webhook(self, content: str) -> bool:
         """
-        使用 Webhook 发送消息到 Discord
+        use Webhook sendingmessageto Discord
         
-        Discord Webhook 支持 Markdown 格式
+        Discord Webhook support Markdown format
         
         Args:
-            content: Markdown 格式的消息内容
+            content: Markdown formatmessagecontent
             
         Returns:
-            是否发送成功
+            whethersendingsuccessful
         """
         try:
             payload = {
                 'content': content,
-                'username': 'A股分析机器人',
+                'username': 'A-shareanalyzingbot',
                 'avatar_url': 'https://picsum.photos/200'
             }
             
@@ -95,24 +95,24 @@ class DiscordSender:
             )
             
             if response.status_code in [200, 204]:
-                logger.info("Discord Webhook 消息发送成功")
+                logger.info("Discord Webhook messagesendingsuccessful")
                 return True
             else:
-                logger.error(f"Discord Webhook 发送失败: {response.status_code} {response.text}")
+                logger.error(f"Discord Webhook sendingfailed: {response.status_code} {response.text}")
                 return False
         except Exception as e:
-            logger.error(f"Discord Webhook 发送异常: {e}")
+            logger.error(f"Discord Webhook sendingabnormal: {e}")
             return False
     
     def _send_discord_bot(self, content: str) -> bool:
         """
-        使用 Bot API 发送消息到 Discord
+        use Bot API sendingmessageto Discord
         
         Args:
-            content: Markdown 格式的消息内容
+            content: Markdown formatmessagecontent
             
         Returns:
-            是否发送成功
+            whethersendingsuccessful
         """
         try:
             headers = {
@@ -128,11 +128,11 @@ class DiscordSender:
             response = requests.post(url, json=payload, headers=headers, timeout=10)
             
             if response.status_code == 200:
-                logger.info("Discord Bot 消息发送成功")
+                logger.info("Discord Bot messagesendingsuccessful")
                 return True
             else:
-                logger.error(f"Discord Bot 发送失败: {response.status_code} {response.text}")
+                logger.error(f"Discord Bot sendingfailed: {response.status_code} {response.text}")
                 return False
         except Exception as e:
-            logger.error(f"Discord Bot 发送异常: {e}")
+            logger.error(f"Discord Bot sendingabnormal: {e}")
             return False

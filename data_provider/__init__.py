@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-数据源策略层 - 包初始化
+datasourcestrategylayer - packageinitializing
 ===================================
 
-本包实现策略模式管理多个数据源，实现：
-1. 统一的数据获取接口
-2. 自动故障切换
-3. 防封禁流控策略
+thispackageimplementstrategymodemanagemultiplecountdatasource，implement：
+1. unifieddatagetAPI/interface
+2. automatic failover
+3. preventblockprohibitstreamcontrolstrategy
 
-数据源优先级（动态调整）：
-【配置了 TUSHARE_TOKEN 时】
-1. TushareFetcher (Priority 0) - 🔥 最高优先级（动态提升）
-2. EfinanceFetcher (Priority 0) - 同优先级
-3. AkshareFetcher (Priority 1) - 来自 akshare 库
-4. PytdxFetcher (Priority 2) - 来自 pytdx 库（通达信）
-5. BaostockFetcher (Priority 3) - 来自 baostock 库
-6. YfinanceFetcher (Priority 4) - 来自 yfinance 库
+datasource priority（dynamicadjust）：
+【configuration TUSHARE_TOKEN when】
+1. TushareFetcher (Priority 0) - 🔥 highest priority（dynamicimprove）
+2. EfinanceFetcher (Priority 0) - samepriority
+3. AkshareFetcher (Priority 1) - from akshare library
+4. PytdxFetcher (Priority 2) - from pytdx library（TongDaXin）
+5. BaostockFetcher (Priority 3) - from baostock library
+6. YfinanceFetcher (Priority 4) - from yfinance library
 
-【未配置 TUSHARE_TOKEN 时】
-1. EfinanceFetcher (Priority 0) - 最高优先级，来自 efinance 库
-2. AkshareFetcher (Priority 1) - 来自 akshare 库
-3. PytdxFetcher (Priority 2) - 来自 pytdx 库（通达信）
-4. TushareFetcher (Priority 2) - 来自 tushare 库（不可用）
-5. BaostockFetcher (Priority 3) - 来自 baostock 库
-6. YfinanceFetcher (Priority 4) - 来自 yfinance 库
+【notconfiguration TUSHARE_TOKEN when】
+1. EfinanceFetcher (Priority 0) - highest priority，from efinance library
+2. AkshareFetcher (Priority 1) - from akshare library
+3. PytdxFetcher (Priority 2) - from pytdx library（TongDaXin）
+4. TushareFetcher (Priority 2) - from tushare library（unavailable）
+5. BaostockFetcher (Priority 3) - from baostock library
+6. YfinanceFetcher (Priority 4) - from yfinance library
 
-提示：优先级数字越小越优先，同优先级按初始化顺序排列
+Tip：prioritycountcharactermoresmallmorepriority，sameprioritybyinitializingorderarrange
 """
 
 from .base import BaseFetcher, DataFetcherManager

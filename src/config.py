@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-A股自选股智能分析系统 - 配置管理模块
+A-share Stock Intelligent Analysis System - Configuration Management Module
 ===================================
 
-职责：
-1. 使用单例模式管理全局配置
-2. 从 .env 文件加载敏感配置
-3. 提供类型安全的配置访问接口
+Responsibilities:
+1. Use singleton pattern to manage global configuration
+2. Load sensitive configuration from .env file
+3. Provide type-safe configuration access interface
 """
 
 import json
@@ -417,27 +417,27 @@ def setup_env(override: bool = False):
 @dataclass
 class Config:
     """
-    系统配置类 - 单例模式
+    systemconfigurationclass - singleton pattern
     
-    设计说明：
-    - 使用 dataclass 简化配置属性定义
-    - 所有配置项从环境变量读取，支持默认值
-    - 类方法 get_instance() 实现单例访问
+    designDescription：
+    - use dataclass simplifyconfigurationpropertydefine
+    - allconfiguration itemfromenvironment variablereading，supportdefault value
+    - class method get_instance() implementsingletonaccess
     """
     
-    # === 自选股配置 ===
+    # === watchlist stocksconfiguration ===
     stock_list: List[str] = field(default_factory=list)
 
-    # === 飞书云文档配置 ===
+    # === Feishucloud documentconfiguration ===
     feishu_app_id: Optional[str] = None
     feishu_app_secret: Optional[str] = None
-    feishu_folder_token: Optional[str] = None  # 目标文件夹 Token
+    feishu_folder_token: Optional[str] = None  # targetfolder Token
 
-    # === 数据源 API Token ===
+    # === datasource API Token ===
     tushare_token: Optional[str] = None
     tickflow_api_key: Optional[str] = None
 
-    # === AI 分析配置 ===
+    # === AI analyzingconfiguration ===
     # LiteLLM unified model config (provider/model format, e.g. gemini/gemini-2.5-flash)
     litellm_model: str = ""  # Primary model; must include provider prefix when set explicitly
     litellm_fallback_models: List[str] = field(default_factory=list)  # Cross-model fallback list
@@ -463,36 +463,36 @@ class Config:
 
     # Legacy single-key fields (kept for backward compatibility; gemini_api_keys[0] when set)
     gemini_api_key: Optional[str] = None
-    gemini_model: str = "gemini-3-flash-preview"  # 主模型
-    gemini_model_fallback: str = "gemini-2.5-flash"  # 备选模型
-    gemini_temperature: float = 0.7  # 温度参数（0.0-2.0，控制输出随机性，默认0.7）
+    gemini_model: str = "gemini-3-flash-preview"  # mainmodel
+    gemini_model_fallback: str = "gemini-2.5-flash"  # alternativemodel
+    gemini_temperature: float = 0.7  # temperatureparameter（0.0-2.0，controloutputrandom-ness，default0.7）
 
-    # Gemini API 请求配置（防止 429 限流）
-    gemini_request_delay: float = 2.0  # 请求间隔（秒）
-    gemini_max_retries: int = 5  # 最大重试次数
-    gemini_retry_delay: float = 5.0  # 重试基础延时（秒）
+    # Gemini API requestconfiguration（prevent 429 rate limiting）
+    gemini_request_delay: float = 2.0  # requestinterval（seconds）
+    gemini_max_retries: int = 5  # maximum retry count
+    gemini_retry_delay: float = 5.0  # retrybasicextendwhen（seconds）
 
-    # Anthropic Claude API（备选，当 Gemini 不可用时使用）
+    # Anthropic Claude API（alternative，when Gemini unavailablewhenuse）
     anthropic_api_key: Optional[str] = None
     anthropic_model: str = "claude-3-5-sonnet-20241022"  # Claude model name
     anthropic_temperature: float = 0.7  # Anthropic temperature (0.0-1.0, default 0.7)
     anthropic_max_tokens: int = 8192  # Max tokens for Anthropic responses
 
-    # OpenAI 兼容 API（备选，当 Gemini/Anthropic 不可用时使用）
+    # OpenAI compatible API（alternative，when Gemini/Anthropic unavailablewhenuse）
     openai_api_key: Optional[str] = None
-    openai_base_url: Optional[str] = None  # 如: https://api.openai.com/v1
-    openai_model: str = "gpt-4o-mini"  # OpenAI 兼容模型名称
+    openai_base_url: Optional[str] = None  # e.g.: https://api.openai.com/v1
+    openai_model: str = "gpt-4o-mini"  # OpenAI compatiblemodelname
     openai_vision_model: Optional[str] = None  # Deprecated: use VISION_MODEL instead
-    openai_temperature: float = 0.7  # OpenAI 温度参数（0.0-2.0，默认0.7）
+    openai_temperature: float = 0.7  # OpenAI temperatureparameter（0.0-2.0，default0.7）
 
-    # === Vision 配置 ===
+    # === Vision configuration ===
     # VISION_MODEL: litellm model string used for image understanding calls.
     # Fallback chain: VISION_MODEL → OPENAI_VISION_MODEL → gemini/gemini-2.0-flash
     vision_model: str = ""
     # VISION_PROVIDER_PRIORITY: comma-separated provider order for Vision fallback.
     vision_provider_priority: str = "gemini,anthropic,openai"
 
-    # === 搜索引擎配置（支持多 Key 负载均衡）===
+    # === searchengineconfiguration（support multiple Key load balancing）===
     bocha_api_keys: List[str] = field(default_factory=list)  # Bocha API Keys
     minimax_api_keys: List[str] = field(default_factory=list)  # MiniMax API Keys
     tavily_api_keys: List[str] = field(default_factory=list)  # Tavily API Keys
@@ -508,12 +508,12 @@ class Config:
     # === Apify Reddit sentiment (selected tickers only) ===
     apify_api_key: Optional[str] = None
 
-    # === 新闻与分析筛选配置 ===
-    news_max_age_days: int = 3   # 新闻最大时效（天）
-    news_strategy_profile: str = "short"  # 新闻窗口策略档位：ultra_short/short/medium/long
-    bias_threshold: float = 5.0  # 乖离率阈值（%），超过此值提示不追高
+    # === newswithanalyzingfilterconfiguration ===
+    news_max_age_days: int = 3   # newsmaxwheneffect（days）
+    news_strategy_profile: str = "short"  # newswindowstrategyleveldigit：ultra_short/short/medium/long
+    bias_threshold: float = 5.0  # BIAS ratiothreshold（%），exceedthisvalueTipdon't chase highs
 
-    # === Agent 模式配置 ===
+    # === Agent modeconfiguration ===
     agent_litellm_model: str = ""  # Optional Agent-only primary model; empty inherits LITELLM_MODEL
     agent_mode: bool = False
     _agent_mode_explicit: bool = False  # True when AGENT_MODE was explicitly set in env
@@ -534,61 +534,61 @@ class Config:
     agent_event_monitor_interval_minutes: int = 5  # Polling interval for event monitor background checks
     agent_event_alert_rules_json: str = ""  # JSON array of serialized EventMonitor rules
 
-    # === 通知配置（可同时配置多个，全部推送）===
+    # === notificationconfiguration（cansimultaneouslyconfigurationmultiplecount，allpush）===
     
-    # 企业微信 Webhook
+    # Enterprise WeChat Webhook
     wechat_webhook_url: Optional[str] = None
     
-    # 飞书 Webhook
+    # Feishu Webhook
     feishu_webhook_url: Optional[str] = None
     
-    # Telegram 配置（需要同时配置 Bot Token 和 Chat ID）
-    telegram_bot_token: Optional[str] = None  # Bot Token（@BotFather 获取）
+    # Telegram configuration（needsimultaneouslyconfiguration Bot Token and Chat ID）
+    telegram_bot_token: Optional[str] = None  # Bot Token（@BotFather get）
     telegram_chat_id: Optional[str] = None  # Chat ID
     telegram_message_thread_id: Optional[str] = None  # Topic ID (Message Thread ID) for groups
     
-    # 邮件配置（只需邮箱和授权码，SMTP 自动识别）
-    email_sender: Optional[str] = None  # 发件人邮箱
-    email_sender_name: str = "daily_stock_analysis股票分析助手"  # 发件人显示名称
-    email_password: Optional[str] = None  # 邮箱密码/授权码
-    email_receivers: List[str] = field(default_factory=list)  # 收件人列表（留空则发给自己）
+    # emailconfiguration（onlyneedemailandauthorizationcode，SMTP auto-detect）
+    email_sender: Optional[str] = None  # sendrecipientemail
+    email_sender_name: str = "daily_stock_analysisstockanalyzingassistant"  # sendrecipientdisplayname
+    email_password: Optional[str] = None  # emailpassword/authorizationcode
+    email_receivers: List[str] = field(default_factory=list)  # recipientlist（keepemptythensendgiveselfself）
 
     # Stock-to-email group routing (Issue #268): STOCK_GROUP_N + EMAIL_GROUP_N
     # When configured, each group's report is sent to that group's emails only.
     stock_email_groups: List[Tuple[List[str], List[str]]] = field(default_factory=list)
 
-    # Pushover 配置（手机/桌面推送通知）
-    pushover_user_key: Optional[str] = None  # 用户 Key（https://pushover.net 获取）
-    pushover_api_token: Optional[str] = None  # 应用 API Token
+    # Pushover configuration（mobile phone/desktoppushnotification）
+    pushover_user_key: Optional[str] = None  # user Key（https://pushover.net get）
+    pushover_api_token: Optional[str] = None  # apply API Token
     
-    # 自定义 Webhook（支持多个，逗号分隔）
-    # 适用于：钉钉、Discord、Slack、自建服务等任意支持 POST JSON 的 Webhook
+    # custom Webhook（support multiple，comma-separated）
+    # suitablefor：DingTalk、Discord、Slack、self-builtserviceetcarbitrarysupport POST JSON  Webhook
     custom_webhook_urls: List[str] = field(default_factory=list)
-    custom_webhook_bearer_token: Optional[str] = None  # Bearer Token（用于需要认证的 Webhook）
-    webhook_verify_ssl: bool = True  # Webhook HTTPS 证书校验，false 可支持自签名（有 MITM 风险）
+    custom_webhook_bearer_token: Optional[str] = None  # Bearer Token（forneedauthentication Webhook）
+    webhook_verify_ssl: bool = True  # Webhook HTTPS certificatevalidate，false cansupportselfsignature（has MITM risk）
 
-    # Discord 通知配置
+    # Discord notificationconfiguration
     discord_bot_token: Optional[str] = None  # Discord Bot Token
-    discord_main_channel_id: Optional[str] = None  # Discord 主频道 ID
+    discord_main_channel_id: Optional[str] = None  # Discord mainchannel ID
     discord_webhook_url: Optional[str] = None  # Discord Webhook URL
 
-    # Slack 通知配置
+    # Slack notificationconfiguration
     slack_webhook_url: Optional[str] = None  # Slack Incoming Webhook URL
     slack_bot_token: Optional[str] = None  # Slack Bot Token (xoxb-...)
-    slack_channel_id: Optional[str] = None  # Slack 频道 ID (Bot 模式必填)
+    slack_channel_id: Optional[str] = None  # Slack channel ID (Bot moderequired)
 
-    # AstrBot 通知配置
+    # AstrBot notificationconfiguration
     astrbot_token: Optional[str] = None
     astrbot_url: Optional[str] = None
 
-    # 单股推送模式：每分析完一只股票立即推送，而不是汇总后推送
+    # single stockpushmode：eachanalyzingcomplete one stockstockimmediatelypush，andis notsummaryafterpush
     single_stock_notify: bool = False
 
-    # 报告类型：simple(精简) 或 full(完整)
+    # report type：simple(simplified) or full(complete)
     report_type: str = "simple"
     report_language: str = "zh"
 
-    # 仅分析结果摘要：true 时只推送汇总，不含个股详情（Issue #262）
+    # onlyanalysis resultsummary：true whenonlypushsummary，notincludeindividual stockdetails（Issue #262）
     report_summary_only: bool = False
 
     # Report Engine P0: Jinja2 renderer and integrity checks
@@ -598,101 +598,101 @@ class Config:
     report_integrity_retry: int = 1  # Retry count when mandatory fields missing (0 = placeholder only)
     report_history_compare_n: int = 0  # History comparison count (0 = disabled)
 
-    # PushPlus 推送配置
+    # PushPlus pushconfiguration
     pushplus_token: Optional[str] = None  # PushPlus Token
-    pushplus_topic: Optional[str] = None  # PushPlus 群组编码（一对多推送）
+    pushplus_topic: Optional[str] = None  # PushPlus groupencoding（onetomultiplepush）
 
-    # Server酱3 推送配置
-    serverchan3_sendkey: Optional[str] = None  # Server酱3 SendKey
+    # Serversauce3 pushconfiguration
+    serverchan3_sendkey: Optional[str] = None  # Serversauce3 SendKey
 
-    # 分析间隔时间（秒）- 用于避免API限流
-    analysis_delay: float = 0.0  # 个股分析与大盘分析之间的延迟
+    # analyzingintervaltime（seconds）- foravoidAPIrate limiting
+    analysis_delay: float = 0.0  # individual stock analysiswithmarket index analysisbetweendelay
 
     # Merge stock + market report into one notification (Issue #190)
     merge_email_notification: bool = False
 
-    # 消息长度限制（字节）- 超长自动分批发送
-    feishu_max_bytes: int = 20000  # 飞书限制约 20KB，默认 20000 字节
-    wechat_max_bytes: int = 4000   # 企业微信限制 4096 字节，默认 4000 字节
-    discord_max_words: int = 2000  # Discord 限制 2000 字，默认 2000 字
-    wechat_msg_type: str = "markdown"  # 企业微信消息类型，默认 markdown 类型
+    # messagelengthconstraint（bytes）- extra longautomaticin batchessending
+    feishu_max_bytes: int = 20000  # Feishuconstraintapproximately 20KB，default 20000 bytes
+    wechat_max_bytes: int = 4000   # Enterprise WeChatconstraint 4096 bytes，default 4000 bytes
+    discord_max_words: int = 2000  # Discord constraint 2000 character，default 2000 character
+    wechat_msg_type: str = "markdown"  # Enterprise WeChatmessagetype，default markdown type
 
-    # Markdown 转图片（Issue #289）：对不支持 Markdown 的渠道以图片发送
-    markdown_to_image_channels: List[str] = field(default_factory=list)  # 逗号分隔：telegram,wechat,custom,email
-    markdown_to_image_max_chars: int = 15000  # 超过此长度不转换，避免超大图片
+    # Markdown convertimage（Issue #289）：tonot supported Markdown channelwithimagesending
+    markdown_to_image_channels: List[str] = field(default_factory=list)  # comma-separated：telegram,wechat,custom,email
+    markdown_to_image_max_chars: int = 15000  # exceedthislengthnotconverting，avoidexceedlargeimage
     md2img_engine: str = "wkhtmltoimage"  # wkhtmltoimage | markdown-to-file (Issue #455, better emoji support)
 
-    # 实时行情预取（Issue #455）：设为 false 可禁用，避免 efinance/akshare_em 全市场拉取
+    # realtimequote/market dataprefetch（Issue #455）：set to false candisabled，avoid efinance/akshare_em allmarketpull
     prefetch_realtime_quotes: bool = True
 
-    # === 数据库配置 ===
+    # === databaseconfiguration ===
     database_path: str = "./data/stock_analysis.db"
 
-    # 是否保存分析上下文快照（用于历史回溯）
+    # whethersavinganalyzingcontextsnapshot（forhistoricalbacktrack）
     save_context_snapshot: bool = True
 
-    # === 回测配置 ===
+    # === backtestconfiguration ===
     backtest_enabled: bool = True
     backtest_eval_window_days: int = 10
     backtest_min_age_days: int = 14
     backtest_engine_version: str = "v1"
     backtest_neutral_band_pct: float = 2.0
     
-    # === 日志配置 ===
-    log_dir: str = "./logs"  # 日志文件目录
-    log_level: str = "INFO"  # 日志级别
+    # === logconfiguration ===
+    log_dir: str = "./logs"  # log filedirectory
+    log_level: str = "INFO"  # loglevel
     
-    # === 系统配置 ===
+    # === systemconfiguration ===
     fmp_api_key: Optional[str] = None  # Financial Modeling Prep API key
     max_workers: int = 8  # 8 concurrent workers (~12 min for 38 stocks)
     debug: bool = False
-    http_proxy: Optional[str] = None  # HTTP 代理 (例如: http://127.0.0.1:10809)
-    https_proxy: Optional[str] = None # HTTPS 代理
+    http_proxy: Optional[str] = None  # HTTP proxy (for example: http://127.0.0.1:10809)
+    https_proxy: Optional[str] = None # HTTPS proxy
     
-    # === 定时任务配置 ===
-    schedule_enabled: bool = False            # 是否启用定时任务
-    schedule_time: str = "18:00"              # 每日推送时间（HH:MM 格式）
-    schedule_run_immediately: bool = True     # 启动时是否立即执行一次
-    run_immediately: bool = True              # 启动时是否立即执行一次（非定时模式）
-    market_review_enabled: bool = True        # 是否启用大盘复盘
-    # 大盘复盘市场区域：cn(A股)、us(美股)、both(两者)，us 适合仅关注美股的用户
+    # === scheduled taskconfiguration ===
+    schedule_enabled: bool = False            # whetherenabledscheduled task
+    schedule_time: str = "18:00"              # dailypushtime（HH:MM format）
+    schedule_run_immediately: bool = True     # startwhenwhetherimmediatelyexecuteonce
+    run_immediately: bool = True              # startwhenwhetherimmediatelyexecuteonce（non-fixedwhenmode）
+    market_review_enabled: bool = True        # whetherenabledmarket review
+    # market review region：cn(A-share)、us(US stock)、both(twoer)，us suitableonlymonitorUS stockuser
     market_review_region: str = "cn"
-    # 交易日检查：默认启用，非交易日跳过执行；设为 false 或 --force-run 可强制执行（Issue #373）
+    # trading daycheck：defaultenabled，non-trading dayskipexecute；set to false or --force-run canmandatoryexecute（Issue #373）
     trading_day_check_enabled: bool = True
 
-    # === 实时行情增强数据配置 ===
-    # 实时行情开关（关闭后使用历史收盘价进行分析）
+    # === realtimequote/market dataenhanceddataconfiguration ===
+    # realtimequote/market datatoggle（closeafterusehistoricalclosing priceproceedanalyzing）
     enable_realtime_quote: bool = True
-    # 盘中实时技术面：启用时用实时价计算 MA/多头排列（Issue #234）；关闭则用昨日收盘
+    # plateinrealtimetechnicals：enabledwhenuserealtimepricecalculating MA/long positionarrange（Issue #234）；closethenuseyesterday's close
     enable_realtime_technical_indicators: bool = True
-    # 筹码分布开关（该接口不稳定，云端部署建议关闭）
+    # chip distributiontoggle（thisAPI/interfaceunstable，clouddeploymentrecommendedclose）
     enable_chip_distribution: bool = True
-    # 东财接口补丁开关
+    # EastmoneyAPI/interfacepatchtoggle
     enable_eastmoney_patch: bool = False
-    # 实时行情数据源优先级（逗号分隔）
-    # 推荐顺序：tencent > akshare_sina > efinance > akshare_em > tushare
-    # - tencent: 腾讯财经，有量比/换手率/市盈率等，单股查询稳定（推荐）
-    # - akshare_sina: 新浪财经，基本行情稳定，但无量比
-    # - efinance/akshare_em: 东财全量接口，数据最全但容易被封
-    # - tushare: Tushare Pro，需要2000积分，数据全面（付费用户可优先使用）
+    # realtimequote/market datadatasource priority（comma-separated）
+    # recommendationorder：tencent > akshare_sina > efinance > akshare_em > tushare
+    # - tencent: Tencent Finance，hasvolume ratio/turnover rate/P/E ratioetc，single stockqueryingstable（recommendation）
+    # - akshare_sina: Sina Finance，basicquote/market datastable，butnovolume ratio
+    # - efinance/akshare_em: EastmoneyfullAPI/interface，datamost completebuteasybyblock
+    # - tushare: Tushare Pro，need2000points，dataallaspect（payfeeusercanprefer to use）
     realtime_source_priority: str = "tencent,akshare_sina,efinance,akshare_em"
-    # 实时行情缓存时间（秒）
+    # realtimequote/market datacachetime（seconds）
     realtime_cache_ttl: int = 600
-    # 熔断器冷却时间（秒）
+    # circuit breakercooldown time（seconds）
     circuit_breaker_cooldown: int = 300
 
-    # === 基本面聚合开关与降级保护 ===
-    # 全局总开关；关闭时返回 not_supported 并保持主流程无变化
+    # === fundamentalsaggregationtogglewithfallbackprotect ===
+    # globaltotaltoggle；closereturn when not_supported andmaintainmainprocessnochange
     enable_fundamental_pipeline: bool = True
-    # 基本面阶段总预算（秒）
+    # fundamentalsstagetotalbudget（seconds）
     fundamental_stage_timeout_seconds: float = 1.5
-    # 单能力源调用超时（秒）
+    # singlecapabilitysourcecalltimeout（seconds）
     fundamental_fetch_timeout_seconds: float = 0.8
-    # 单能力失败重试次数（已包含首次）
+    # singlecapabilityfailedretry count（alreadypackageincludefirsttimes）
     fundamental_retry_max: int = 1
-    # 基本面上下文短 TTL（秒）
+    # fundamentalscontextshort TTL（seconds）
     fundamental_cache_ttl_seconds: int = 120
-    # 基本面缓存最大条目数（避免长时间运行内存增长）
+    # fundamentalscachemaxitemsitemcount（avoidlongtimerunninginstorage increaselong）
     fundamental_cache_max_entries: int = 256
 
     # === Portfolio PR2: import/risk/fx settings ===
@@ -703,54 +703,54 @@ class Config:
     portfolio_risk_lookback_days: int = 180
     portfolio_fx_update_enabled: bool = True
 
-    # Discord 机器人状态
-    discord_bot_status: str = "A股智能分析 | /help"
+    # Discord botstatus
+    discord_bot_status: str = "A-shareintelligentanalyzing | /help"
 
-    # === 流控配置（防封禁关键参数）===
-    # Akshare 请求间隔范围（秒）
+    # === streamcontrolconfiguration（preventblockprohibitkeyparameter）===
+    # Akshare requestintervalrange（seconds）
     akshare_sleep_min: float = 2.0
     akshare_sleep_max: float = 5.0
     
-    # Tushare 每分钟最大请求数（免费配额）
+    # Tushare eachminutesmaxrequest count（freequota）
     tushare_rate_limit_per_minute: int = 80
     
-    # 重试配置
+    # retryconfiguration
     max_retries: int = 3
     retry_base_delay: float = 1.0
     retry_max_delay: float = 30.0
     
-    # === WebUI 配置 ===
+    # === WebUI configuration ===
     webui_enabled: bool = False
     webui_host: str = "127.0.0.1"
     webui_port: int = 8000
     
-    # === 机器人配置 ===
-    bot_enabled: bool = True              # 是否启用机器人功能
-    bot_command_prefix: str = "/"         # 命令前缀
-    bot_rate_limit_requests: int = 10     # 频率限制：窗口内最大请求数
-    bot_rate_limit_window: int = 60       # 频率限制：窗口时间（秒）
-    bot_admin_users: List[str] = field(default_factory=list)  # 管理员用户 ID 列表
+    # === botconfiguration ===
+    bot_enabled: bool = True              # whetherenabledbotfeature
+    bot_command_prefix: str = "/"         # commandprefix
+    bot_rate_limit_requests: int = 10     # frequencyconstraint：max within windowrequest count
+    bot_rate_limit_window: int = 60       # frequencyconstraint：window time（seconds）
+    bot_admin_users: List[str] = field(default_factory=list)  # adminuser ID list
     
-    # 飞书机器人（事件订阅）- 已有 feishu_app_id, feishu_app_secret
-    feishu_verification_token: Optional[str] = None  # 事件订阅验证 Token
-    feishu_encrypt_key: Optional[str] = None         # 消息加密密钥（可选）
-    feishu_stream_enabled: bool = False              # 是否启用 Stream 长连接模式（无需公网IP）
+    # Feishubot（eventsubscribe）- existing feishu_app_id, feishu_app_secret
+    feishu_verification_token: Optional[str] = None  # eventsubscribeverification Token
+    feishu_encrypt_key: Optional[str] = None         # messageencryptionkey（optional）
+    feishu_stream_enabled: bool = False              # whetherenabled Stream longconnectingmode（no public network neededIP）
     
-    # 钉钉机器人
-    dingtalk_app_key: Optional[str] = None      # 应用 AppKey
-    dingtalk_app_secret: Optional[str] = None   # 应用 AppSecret
-    dingtalk_stream_enabled: bool = False       # 是否启用 Stream 模式（无需公网IP）
+    # DingTalkbot
+    dingtalk_app_key: Optional[str] = None      # apply AppKey
+    dingtalk_app_secret: Optional[str] = None   # apply AppSecret
+    dingtalk_stream_enabled: bool = False       # whetherenabled Stream mode（no public network neededIP）
     
-    # 企业微信机器人（回调模式）
-    wecom_corpid: Optional[str] = None              # 企业 ID
-    wecom_token: Optional[str] = None               # 回调 Token
-    wecom_encoding_aes_key: Optional[str] = None    # 消息加解密密钥
-    wecom_agent_id: Optional[str] = None            # 应用 AgentId
+    # Enterprise WeChatbot（pullbackmode）
+    wecom_corpid: Optional[str] = None              # Corp ID
+    wecom_token: Optional[str] = None               # pullback Token
+    wecom_encoding_aes_key: Optional[str] = None    # message encryption/decryptionkey
+    wecom_agent_id: Optional[str] = None            # apply AgentId
     
-    # Telegram 机器人 - 已有 telegram_bot_token, telegram_chat_id
-    telegram_webhook_secret: Optional[str] = None   # Webhook 密钥
+    # Telegram bot - existing telegram_bot_token, telegram_chat_id
+    telegram_webhook_secret: Optional[str] = None   # Webhook key
 
-    # === 配置校验模式 ===
+    # === configurationvalidatemode ===
     # CONFIG_VALIDATE_MODE=warn (default): log all issues but always continue startup
     # CONFIG_VALIDATE_MODE=strict: exit(1) when any "error" severity issue is found
     config_validate_mode: str = "warn"
@@ -787,18 +787,18 @@ class Config:
             )
             object.__setattr__(self, "agent_skill_routing", "auto")
 
-    # 单例实例存储
+    # singletoninstancestorage
     _instance: Optional['Config'] = None
     
     @classmethod
     def get_instance(cls) -> 'Config':
         """
-        获取配置单例实例
+        getconfigurationsingletoninstance
         
-        单例模式确保：
-        1. 全局只有一个配置实例
-        2. 配置只从环境变量加载一次
-        3. 所有模块共享相同配置
+        singleton patternensure：
+        1. globalonlyhasonecountconfigurationinstance
+        2. configurationonlyfromenvironment variableloadingonce
+        3. allmoduletotalenjoysameconfiguration
         """
         if cls._instance is None:
             cls._instance = cls._load_from_env()
@@ -807,61 +807,61 @@ class Config:
     @classmethod
     def _load_from_env(cls) -> 'Config':
         """
-        从 .env 文件加载配置
+        from .env fileloadingconfiguration
         
-        加载优先级：
-        1. 系统环境变量
-        2. .env 文件
-        3. 代码中的默认值
+        loadingpriority：
+        1. systemenvironment variable
+        2. .env file
+        3. codeindefault value
         """
         preexisting_report_language = os.environ.get("REPORT_LANGUAGE")
 
-        # 确保环境变量已加载
+        # ensureenvironment variablealreadyloading
         setup_env()
 
-        # === 智能代理配置 (关键修复) ===
-        # 如果配置了代理，自动设置 NO_PROXY 以排除国内数据源，避免行情获取失败
+        # === intelligentproxyconfiguration (keyfix) ===
+        # ifconfigurationproxy，automaticsettings NO_PROXY withexcludedomesticdatasource，avoidquote/market datafetch failed
         http_proxy = os.getenv('HTTP_PROXY') or os.getenv('http_proxy')
         if http_proxy:
-            # 国内金融数据源域名列表
+            # domesticFinancedatasourcedomainnamelist
             domestic_domains = [
-                'eastmoney.com',   # 东方财富 (Efinance/Akshare)
-                'sina.com.cn',     # 新浪财经 (Akshare)
-                '163.com',         # 网易财经 (Akshare)
+                'eastmoney.com',   # Eastmoney (Efinance/Akshare)
+                'sina.com.cn',     # Sina Finance (Akshare)
+                '163.com',         # NetEase Financethrough (Akshare)
                 'tushare.pro',     # Tushare
                 'baostock.com',    # Baostock
-                'sse.com.cn',      # 上交所
-                'szse.cn',         # 深交所
-                'csindex.com.cn',  # 中证指数
-                'cninfo.com.cn',   # 巨潮资讯
+                'sse.com.cn',      # SSE
+                'szse.cn',         # SZSE
+                'csindex.com.cn',  # China Securitiesindex
+                'cninfo.com.cn',   # CNInfocapitalmessage
                 'localhost',
                 '127.0.0.1'
             ]
 
-            # 获取现有的 no_proxy
+            # getcurrenthas no_proxy
             current_no_proxy = os.getenv('NO_PROXY') or os.getenv('no_proxy') or ''
             existing_domains = current_no_proxy.split(',') if current_no_proxy else []
 
-            # 合并去重
+            # mergingdeduplicate
             final_domains = list(set(existing_domains + domestic_domains))
             final_no_proxy = ','.join(filter(None, final_domains))
 
-            # 设置环境变量 (requests/urllib3/aiohttp 都会遵守此设置)
+            # settingsenvironment variable (requests/urllib3/aiohttp allwillcomply withthissettings)
             os.environ['NO_PROXY'] = final_no_proxy
             os.environ['no_proxy'] = final_no_proxy
 
-            # 确保 HTTP_PROXY 也被正确设置（以防仅在 .env 中定义但未导出）
+            # ensure HTTP_PROXY alsobycorrectsettings（withpreventonly in .env indefinebutnotexport）
             os.environ['HTTP_PROXY'] = http_proxy
             os.environ['http_proxy'] = http_proxy
 
-            # HTTPS_PROXY 同理
+            # HTTPS_PROXY samereason
             https_proxy = os.getenv('HTTPS_PROXY') or os.getenv('https_proxy')
             if https_proxy:
                 os.environ['HTTPS_PROXY'] = https_proxy
                 os.environ['https_proxy'] = https_proxy
 
         
-        # 解析自选股列表（逗号分隔，统一为大写 Issue #355）
+        # parsingwatchlist stockslist（comma-separated，unifiedasuppercase Issue #355）
         stock_list_str = os.getenv('STOCK_LIST', '')
         stock_list = [
             (c or "").strip().upper()
@@ -869,7 +869,7 @@ class Config:
             if (c or "").strip()
         ]
         
-        # 如果没有配置，使用默认的示例股票
+        # if noconfiguration，usedefaultExamplestock
         if not stock_list:
             stock_list = ['600519', '000001', '300750']
         
@@ -994,7 +994,7 @@ class Config:
             configured_models=set(get_configured_llm_models(llm_model_list)),
         )
 
-        # 解析搜索引擎 API Keys（支持多个 key，逗号分隔）
+        # parsingsearchengine API Keys（support multiple key，comma-separated）
         bocha_keys_str = os.getenv('BOCHA_API_KEYS', '')
         bocha_api_keys = [k.strip() for k in bocha_keys_str.split(',') if k.strip()]
 
@@ -1021,7 +1021,7 @@ class Config:
                 invalid_searxng_urls.append(u)
         if invalid_searxng_urls:
             logger.warning(
-                "SEARXNG_BASE_URLS 中存在无效 URL，已忽略: %s",
+                "SEARXNG_BASE_URLS inexistsinvalid URL，alreadyignore: %s",
                 ", ".join(invalid_searxng_urls[:3]),
             )
         searxng_public_instances_enabled = parse_env_bool(
@@ -1029,7 +1029,7 @@ class Config:
             default=True,
         )
 
-        # 企微消息类型与最大字节数逻辑
+        # WeCommessagetypewithmax byteslogic
         wechat_msg_type = os.getenv('WECHAT_MSG_TYPE', 'markdown')
         wechat_msg_type_lower = wechat_msg_type.lower()
         wechat_max_bytes_env = os.getenv('WECHAT_MAX_BYTES')
@@ -1041,7 +1041,7 @@ class Config:
                 minimum=1,
             )
         else:
-            # 未显式配置时，根据消息类型选择默认字节数
+            # notexplicitconfigurationwhen，based onmessagetypeselectdefaultbytescount
             wechat_max_bytes = 2048 if wechat_msg_type_lower == 'text' else 4000
 
         # Preserve historical semantics for startup flags: only an explicit
@@ -1179,7 +1179,7 @@ class Config:
             telegram_chat_id=os.getenv('TELEGRAM_CHAT_ID'),
             telegram_message_thread_id=os.getenv('TELEGRAM_MESSAGE_THREAD_ID'),
             email_sender=os.getenv('EMAIL_SENDER'),
-            email_sender_name=os.getenv('EMAIL_SENDER_NAME', 'daily_stock_analysis股票分析助手'),
+            email_sender_name=os.getenv('EMAIL_SENDER_NAME', 'daily_stock_analysisstockanalyzingassistant'),
             email_password=os.getenv('EMAIL_PASSWORD'),
             email_receivers=[r.strip() for r in os.getenv('EMAIL_RECEIVERS', '').split(',') if r.strip()],
             stock_email_groups=cls._parse_stock_email_groups(),
@@ -1262,42 +1262,42 @@ class Config:
             webui_enabled=os.getenv('WEBUI_ENABLED', 'false').lower() == 'true',
             webui_host=os.getenv('WEBUI_HOST', '127.0.0.1'),
             webui_port=parse_env_int(os.getenv('WEBUI_PORT'), 8000, field_name='WEBUI_PORT', minimum=1, maximum=65535),
-            # 机器人配置
+            # botconfiguration
             bot_enabled=os.getenv('BOT_ENABLED', 'true').lower() == 'true',
             bot_command_prefix=os.getenv('BOT_COMMAND_PREFIX', '/'),
             bot_rate_limit_requests=parse_env_int(os.getenv('BOT_RATE_LIMIT_REQUESTS'), 10, field_name='BOT_RATE_LIMIT_REQUESTS', minimum=1),
             bot_rate_limit_window=parse_env_int(os.getenv('BOT_RATE_LIMIT_WINDOW'), 60, field_name='BOT_RATE_LIMIT_WINDOW', minimum=1),
             bot_admin_users=[u.strip() for u in os.getenv('BOT_ADMIN_USERS', '').split(',') if u.strip()],
-            # 飞书机器人
+            # Feishubot
             feishu_verification_token=os.getenv('FEISHU_VERIFICATION_TOKEN'),
             feishu_encrypt_key=os.getenv('FEISHU_ENCRYPT_KEY'),
             feishu_stream_enabled=os.getenv('FEISHU_STREAM_ENABLED', 'false').lower() == 'true',
-            # 钉钉机器人
+            # DingTalkbot
             dingtalk_app_key=os.getenv('DINGTALK_APP_KEY'),
             dingtalk_app_secret=os.getenv('DINGTALK_APP_SECRET'),
             dingtalk_stream_enabled=os.getenv('DINGTALK_STREAM_ENABLED', 'false').lower() == 'true',
-            # 企业微信机器人
+            # Enterprise WeChatbot
             wecom_corpid=os.getenv('WECOM_CORPID'),
             wecom_token=os.getenv('WECOM_TOKEN'),
             wecom_encoding_aes_key=os.getenv('WECOM_ENCODING_AES_KEY'),
             wecom_agent_id=os.getenv('WECOM_AGENT_ID'),
             # Telegram
             telegram_webhook_secret=os.getenv('TELEGRAM_WEBHOOK_SECRET'),
-            # Discord 机器人扩展配置
-            discord_bot_status=os.getenv('DISCORD_BOT_STATUS', 'A股智能分析 | /help'),
-            # 实时行情增强数据配置
+            # Discord botextensionconfiguration
+            discord_bot_status=os.getenv('DISCORD_BOT_STATUS', 'A-shareintelligentanalyzing | /help'),
+            # realtimequote/market dataenhanceddataconfiguration
             enable_realtime_quote=os.getenv('ENABLE_REALTIME_QUOTE', 'true').lower() == 'true',
             enable_realtime_technical_indicators=os.getenv(
                 'ENABLE_REALTIME_TECHNICAL_INDICATORS', 'true'
             ).lower() == 'true',
             enable_chip_distribution=os.getenv('ENABLE_CHIP_DISTRIBUTION', 'true').lower() == 'true',
-            # 东财接口补丁开关
+            # EastmoneyAPI/interfacepatchtoggle
             enable_eastmoney_patch=os.getenv('ENABLE_EASTMONEY_PATCH', 'false').lower() == 'true',
-            # 实时行情数据源优先级：
-            # - tencent: 腾讯财经，有量比/换手率/PE/PB等，单股查询稳定（推荐）
-            # - akshare_sina: 新浪财经，基本行情稳定，但无量比
-            # - efinance/akshare_em: 东财全量接口，数据最全但容易被封
-            # - tushare: Tushare Pro，需要2000积分，数据全面
+            # realtimequote/market datadatasource priority：
+            # - tencent: Tencent Finance，hasvolume ratio/turnover rate/PE/PBetc，single stockqueryingstable（recommendation）
+            # - akshare_sina: Sina Finance，basicquote/market datastable，butnovolume ratio
+            # - efinance/akshare_em: EastmoneyfullAPI/interface，datamost completebuteasybyblock
+            # - tushare: Tushare Pro，need2000points，dataallaspect
             realtime_source_priority=cls._resolve_realtime_source_priority(),
             realtime_cache_ttl=parse_env_int(os.getenv('REALTIME_CACHE_TTL'), 600, field_name='REALTIME_CACHE_TTL', minimum=0),
             circuit_breaker_cooldown=parse_env_int(os.getenv('CIRCUIT_BREAKER_COOLDOWN'), 300, field_name='CIRCUIT_BREAKER_COOLDOWN', minimum=0),
@@ -1701,13 +1701,13 @@ class Config:
 
     @classmethod
     def _parse_market_review_region(cls, value: str) -> str:
-        """解析大盘复盘市场区域，非法值记录警告后回退为 cn"""
+        """parsingmarket review region，non-methodvaluerecordWarningafterrollbackas cn"""
         import logging
         v = (value or 'cn').strip().lower()
         if v in ('cn', 'us', 'both'):
             return v
         logging.getLogger(__name__).warning(
-            f"MARKET_REVIEW_REGION 配置值 '{value}' 无效，已回退为默认值 'cn'（合法值：cn / us / both）"
+            f"MARKET_REVIEW_REGION configuration value '{value}' invalid，alreadyrollbackasdefault value 'cn'（legalvalue：cn / us / both）"
         )
         return 'cn'
 
@@ -1757,7 +1757,7 @@ class Config:
 
     @classmethod
     def reset_instance(cls) -> None:
-        """重置单例（主要用于测试）"""
+        """resetsingleton（mainly fortesting）"""
         cls._instance = None
 
     def has_searxng_enabled(self) -> bool:
@@ -1802,23 +1802,23 @@ class Config:
 
     def refresh_stock_list(self) -> None:
         """
-        热读取 STOCK_LIST 环境变量并更新配置中的自选股列表
+        hotreading STOCK_LIST environment variableandupdatingconfigurationwatchlist stocks inlist
         
-        支持两种配置方式：
-        1. .env 文件（本地开发、定时任务模式） - 修改后下次执行自动生效
-        2. 系统环境变量（GitHub Actions、Docker） - 启动时固定，运行中不变
+        supporttwotypeconfigurationmethod：
+        1. .env file（localdevelopment、scheduled taskmode） - modifyafternext executionautomatictake effect
+        2. systemenvironment variable（GitHub Actions、Docker） - startwhenfixedfixed，runningnotchange
         """
-        # 优先从 .env 文件读取最新配置，这样即使在容器环境中修改了 .env 文件，
-        # 也能获取到最新的股票列表配置
+        # priorityfrom .env filereadinglatestconfiguration，thislikei.e.useincapacityhandlerenvironmentinmodify .env file，
+        # can alsogettolateststocklistconfiguration
         env_file = os.getenv("ENV_FILE")
         env_path = Path(env_file) if env_file else (Path(__file__).parent.parent / '.env')
         stock_list_str = ''
         if env_path.exists():
-            # 直接从 .env 文件读取最新的配置
+            # directlyfrom .env filereadinglatestconfiguration
             env_values = dotenv_values(env_path)
             stock_list_str = (env_values.get('STOCK_LIST') or '').strip()
 
-        # 如果 .env 文件不存在或未配置，才尝试从系统环境变量读取
+        # if .env filenot foundornotconfiguration，only thentryfromsystemenvironment variablereading
         if not stock_list_str:
             stock_list_str = os.getenv('STOCK_LIST', '')
 
@@ -1852,7 +1852,7 @@ class Config:
         if not self.stock_list:
             issues.append(ConfigIssue(
                 severity="error",
-                message="未配置自选股列表 (STOCK_LIST)",
+                message="notconfigurationwatchlist stockslist (STOCK_LIST)",
                 field="STOCK_LIST",
             ))
 
@@ -1860,7 +1860,7 @@ class Config:
         if not self.tushare_token:
             issues.append(ConfigIssue(
                 severity="info",
-                message="未配置 Tushare Token，将使用其他数据源",
+                message="notconfiguration Tushare Token，willuseotherdatasource",
                 field="TUSHARE_TOKEN",
             ))
 
@@ -1873,8 +1873,8 @@ class Config:
             issues.append(ConfigIssue(
                 severity="error",
                 message=(
-                    "未配置任何 LLM（LITELLM_CONFIG / LLM_CHANNELS / *_API_KEY），"
-                    "AI 分析功能将不可用"
+                    "notconfigurationany LLM（LITELLM_CONFIG / LLM_CHANNELS / *_API_KEY），"
+                    "AI analyzingfeature will be unavailable"
                 ),
                 field="LITELLM_CONFIG",
             ))
@@ -1882,8 +1882,8 @@ class Config:
             issues.append(ConfigIssue(
                 severity="info",
                 message=(
-                    "LITELLM_MODEL 未配置，将自动从可用 API Key 推断模型。"
-                    "建议尽早配置 LITELLM_MODEL（格式如 gemini/gemini-2.5-flash）"
+                    "LITELLM_MODEL notconfiguration，willautomaticfromavailable API Key infermodel。"
+                    "recommendedas early as possibleconfiguration LITELLM_MODEL（formate.g. gemini/gemini-2.5-flash）"
                 ),
                 field="LITELLM_MODEL",
             ))
@@ -1917,8 +1917,8 @@ class Config:
                 issues.append(ConfigIssue(
                     severity="error",
                     message=(
-                        "LITELLM_MODEL 已配置，但当前渠道/配置文件中不存在该模型。"
-                        f" 当前可用模型：{', '.join(available_router_models[:6])}"
+                        "LITELLM_MODEL alreadyconfiguration，butcurrentchannel/configuration fileinnot foundthismodel。"
+                        f" currently availablemodel：{', '.join(available_router_models[:6])}"
                     ),
                     field="LITELLM_MODEL",
                 ))
@@ -1932,8 +1932,8 @@ class Config:
                 issues.append(ConfigIssue(
                     severity="error",
                     message=(
-                        "AGENT_LITELLM_MODEL 已配置，但当前渠道/配置文件中不存在该模型。"
-                        f" 当前可用模型：{', '.join(available_router_models[:6])}"
+                        "AGENT_LITELLM_MODEL alreadyconfiguration，butcurrentchannel/configuration fileinnot foundthismodel。"
+                        f" currently availablemodel：{', '.join(available_router_models[:6])}"
                     ),
                     field="AGENT_LITELLM_MODEL",
                 ))
@@ -1947,7 +1947,7 @@ class Config:
                 issues.append(ConfigIssue(
                     severity="warning",
                     message=(
-                        "LITELLM_FALLBACK_MODELS 中包含未在当前渠道声明的模型："
+                        "LITELLM_FALLBACK_MODELS inpackageincludenotincurrentchanneldeclaremodel："
                         f"{', '.join(invalid_fallbacks[:3])}"
                     ),
                     field="LITELLM_FALLBACK_MODELS",
@@ -1961,8 +1961,8 @@ class Config:
                 issues.append(ConfigIssue(
                     severity="warning",
                     message=(
-                        "VISION_MODEL 未出现在当前渠道声明中。"
-                        f" 当前可用模型：{', '.join(available_router_models[:6])}"
+                        "VISION_MODEL notappearincurrentchanneldeclarein。"
+                        f" currently availablemodel：{', '.join(available_router_models[:6])}"
                     ),
                     field="VISION_MODEL",
                 ))
@@ -1974,8 +1974,8 @@ class Config:
             issues.append(ConfigIssue(
                 severity="error",
                 message=(
-                    "AGENT_LITELLM_MODEL 已配置，但未找到可用的运行时来源"
-                    "（启用渠道或匹配的 API Key）。"
+                    "AGENT_LITELLM_MODEL alreadyconfiguration，butnot foundavailablerunningwhensource"
+                    "（enabledchannelormatch API Key）。"
                 ),
                 field="AGENT_LITELLM_MODEL",
             ))
@@ -1984,7 +1984,7 @@ class Config:
         if not self.has_search_capability_enabled():
             issues.append(ConfigIssue(
                 severity="info",
-                message="未配置搜索引擎能力 (Bocha/MiniMax/Tavily/Brave/SerpAPI/SearXNG)，新闻搜索功能将不可用",
+                message="notconfigurationsearchenginecapability (Bocha/MiniMax/Tavily/Brave/SerpAPI/SearXNG)，newssearchfeature will be unavailable",
                 field="BOCHA_API_KEYS",
             ))
 
@@ -2007,7 +2007,7 @@ class Config:
         if not has_notification:
             issues.append(ConfigIssue(
                 severity="warning",
-                message="未配置通知渠道，将不发送推送通知",
+                message="notconfigurationnotification channel，willnotsendingpushnotification",
                 field="WECHAT_WEBHOOK_URL",
             ))
 
@@ -2016,8 +2016,8 @@ class Config:
             issues.append(ConfigIssue(
                 severity="info",
                 message=(
-                    "OPENAI_VISION_MODEL 已废弃，请改用 VISION_MODEL。"
-                    "当前值已自动迁移，建议更新配置文件以消除此提示。"
+                    "OPENAI_VISION_MODEL deprecated，pleasemodifyuse VISION_MODEL。"
+                    "currentvaluealreadyautomaticmigratemove，recommendedupdatingconfiguration filewitheliminatethisTip。"
                 ),
                 field="OPENAI_VISION_MODEL",
             ))
@@ -2062,9 +2062,9 @@ class Config:
                 issues.append(ConfigIssue(
                     severity="warning",
                     message=(
-                        "VISION_MODEL 已配置，但未找到可用的 Vision API Key "
-                        f"（已检查：{', '.join(_checked)}）。"
-                        "图片股票代码提取功能将不可用，请配置对应的 API Key。"
+                        "VISION_MODEL alreadyconfiguration，butnot foundavailable Vision API Key "
+                        f"（alreadycheck：{', '.join(_checked)}）。"
+                        "imagestock codeextractfeature will be unavailable，pleaseconfigurationtoshould API Key。"
                     ),
                     field="VISION_MODEL",
                 ))
@@ -2084,18 +2084,18 @@ class Config:
     
     def get_db_url(self) -> str:
         """
-        获取 SQLAlchemy 数据库连接 URL
+        get SQLAlchemy databaseconnecting URL
         
-        自动创建数据库目录（如果不存在）
+        automaticcreatingdatabasedirectory（ifnot found）
         """
         db_path = Path(self.database_path)
         db_path.parent.mkdir(parents=True, exist_ok=True)
         return f"sqlite:///{db_path.absolute()}"
 
 
-# === 便捷的配置访问函数 ===
+# === convenientconfigurationaccessfunction ===
 def get_config() -> Config:
-    """获取全局配置实例的快捷方式"""
+    """get globalconfigurationinstanceshortcut"""
     return Config.get_instance()
 
 
@@ -2142,17 +2142,17 @@ def extra_litellm_params(model: str, config: Config) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    # 测试配置加载
+    # testingconfigurationloading
     config = get_config()
-    print("=== 配置加载测试 ===")
-    print(f"自选股列表: {config.stock_list}")
-    print(f"数据库路径: {config.database_path}")
-    print(f"最大并发数: {config.max_workers}")
-    print(f"调试模式: {config.debug}")
+    print("=== configurationloadingtesting ===")
+    print(f"watchlist stockslist: {config.stock_list}")
+    print(f"databasepath: {config.database_path}")
+    print(f"maxconcurrencycount: {config.max_workers}")
+    print(f"debugmode: {config.debug}")
     
-    # 验证配置
+    # verificationconfiguration
     warnings = config.validate()
     if warnings:
-        print("\n配置验证结果:")
+        print("\nconfigurationverificationresult:")
         for w in warnings:
             print(f"  - {w}")

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-机器人消息模型
+botmessagemodel
 ===================================
 
-定义统一的消息和响应模型，屏蔽各平台差异。
+defineunifiedmessageandresponsemodel，blockeachplatformdifference。
 """
 
 from dataclasses import dataclass, field
@@ -14,41 +14,41 @@ from typing import Dict, Any, Optional, List
 
 
 class ChatType(str, Enum):
-    """会话类型"""
-    GROUP = "group"      # 群聊
-    PRIVATE = "private"  # 私聊
-    UNKNOWN = "unknown"  # 未知
+    """sessiontype"""
+    GROUP = "group"      # group chat
+    PRIVATE = "private"  # private message
+    UNKNOWN = "unknown"  # unknown
 
 
 class Platform(str, Enum):
-    """平台类型"""
-    FEISHU = "feishu"        # 飞书
-    DINGTALK = "dingtalk"    # 钉钉
-    WECOM = "wecom"          # 企业微信
+    """platformtype"""
+    FEISHU = "feishu"        # Feishu
+    DINGTALK = "dingtalk"    # DingTalk
+    WECOM = "wecom"          # Enterprise WeChat
     TELEGRAM = "telegram"    # Telegram
-    UNKNOWN = "unknown"      # 未知
+    UNKNOWN = "unknown"      # unknown
 
 
 @dataclass
 class BotMessage:
     """
-    统一的机器人消息模型
+    unifiedbotmessagemodel
     
-    将各平台的消息格式统一为此模型，便于命令处理器处理。
+    willeachplatformmessageformatunifiedasthismodel，for conveniencecommandhandlerprocessing。
     
     Attributes:
-        platform: 平台标识
-        message_id: 消息 ID（平台原始 ID）
-        user_id: 发送者 ID
-        user_name: 发送者名称
-        chat_id: 会话 ID（群聊 ID 或私聊 ID）
-        chat_type: 会话类型
-        content: 消息文本内容（已去除 @机器人 部分）
-        raw_content: 原始消息内容
-        mentioned: 是否 @了机器人
-        mentions: @的用户列表
-        timestamp: 消息时间戳
-        raw_data: 原始请求数据（平台特定，用于调试）
+        platform: platform identifier
+        message_id: message ID（platformraw ID）
+        user_id: sendinger ID
+        user_name: sendingername
+        chat_id: session ID（group chat ID orprivate message ID）
+        chat_type: sessiontype
+        content: messagetextcontent（alreadyremove @bot partial）
+        raw_content: rawmessagecontent
+        mentioned: whether @bot
+        mentions: @userlist
+        timestamp: messagetimestamp
+        raw_data: rawrequest countdata（platformspecific，fordebug）
     """
     platform: str
     message_id: str
@@ -65,26 +65,26 @@ class BotMessage:
     
     def get_command_and_args(self, prefix: str = "/") -> tuple:
         """
-        解析命令和参数
+        parsingcommandandparameter
         
         Args:
-            prefix: 命令前缀，默认 "/"
+            prefix: commandprefix，default "/"
             
         Returns:
-            (command, args) 元组，如 ("analyze", ["600519"])
-            如果不是命令，返回 (None, [])
+            (command, args) tuple，e.g. ("analyze", ["600519"])
+            ifis notcommand，return (None, [])
         """
         text = self.content.strip()
         
-        # 检查是否以命令前缀开头
+        # checkwhetherwithcommandprefixstart
         if not text.startswith(prefix):
-            # 尝试匹配中文命令（无前缀）
+            # trymatchChinesecommand（noprefix）
             chinese_commands = {
-                '分析': 'analyze',
-                '大盘': 'market',
-                '批量': 'batch',
-                '帮助': 'help',
-                '状态': 'status',
+                'analyzing': 'analyze',
+                'market index': 'market',
+                'batch': 'batch',
+                'help': 'help',
+                'status': 'status',
             }
             for cn_cmd, en_cmd in chinese_commands.items():
                 if text.startswith(cn_cmd):
@@ -92,10 +92,10 @@ class BotMessage:
                     return en_cmd, args
             return None, []
         
-        # 去除前缀
+        # removeprefix
         text = text[len(prefix):]
         
-        # 分割命令和参数
+        # splittingcommandandparameter
         parts = text.split()
         if not parts:
             return None, []
@@ -106,7 +106,7 @@ class BotMessage:
         return command, args
     
     def is_command(self, prefix: str = "/") -> bool:
-        """检查消息是否是命令"""
+        """checkmessagewhether iscommand"""
         cmd, _ = self.get_command_and_args(prefix)
         return cmd is not None
 
@@ -114,16 +114,16 @@ class BotMessage:
 @dataclass
 class BotResponse:
     """
-    统一的机器人响应模型
+    unifiedbotresponsemodel
     
-    命令处理器返回此模型，由平台适配器转换为平台特定格式。
+    commandhandlerreturnthismodel，byplatformadapterconvertingasplatformspecificformat。
     
     Attributes:
-        text: 回复文本
-        markdown: 是否为 Markdown 格式
-        at_user: 是否 @发送者
-        reply_to_message: 是否回复原消息
-        extra: 额外数据（平台特定）
+        text: reply text
+        markdown: whether is Markdown format
+        at_user: whether @sendinger
+        reply_to_message: whetherreplyoriginalmessage
+        extra: extradata（platformspecific）
     """
     text: str
     markdown: bool = False
@@ -133,31 +133,31 @@ class BotResponse:
     
     @classmethod
     def text_response(cls, text: str, at_user: bool = True) -> 'BotResponse':
-        """创建纯文本响应"""
+        """creatingplain textresponse"""
         return cls(text=text, markdown=False, at_user=at_user)
     
     @classmethod
     def markdown_response(cls, text: str, at_user: bool = True) -> 'BotResponse':
-        """创建 Markdown 响应"""
+        """creating Markdown response"""
         return cls(text=text, markdown=True, at_user=at_user)
     
     @classmethod
     def error_response(cls, message: str) -> 'BotResponse':
-        """创建错误响应"""
-        return cls(text=f"❌ 错误：{message}", markdown=False, at_user=True)
+        """creatingerrorresponse"""
+        return cls(text=f"❌ error：{message}", markdown=False, at_user=True)
 
 
 @dataclass
 class WebhookResponse:
     """
-    Webhook 响应模型
+    Webhook responsemodel
     
-    平台适配器返回此模型，包含 HTTP 响应内容。
+    platformadapterreturnthismodel，packageinclude HTTP responsecontent。
     
     Attributes:
-        status_code: HTTP 状态码
-        body: 响应体（字典，将被 JSON 序列化）
-        headers: 额外的响应头
+        status_code: HTTP status code
+        body: response body（dictionary，willby JSON sequencecolumn-ize）
+        headers: extraresponse headers
     """
     status_code: int = 200
     body: Dict[str, Any] = field(default_factory=dict)
@@ -165,15 +165,15 @@ class WebhookResponse:
     
     @classmethod
     def success(cls, body: Optional[Dict] = None) -> 'WebhookResponse':
-        """创建成功响应"""
+        """creatingsuccessfulresponse"""
         return cls(status_code=200, body=body or {})
     
     @classmethod
     def challenge(cls, challenge: str) -> 'WebhookResponse':
-        """创建验证响应（用于平台 URL 验证）"""
+        """creatingverificationresponse（forplatform URL verification）"""
         return cls(status_code=200, body={"challenge": challenge})
     
     @classmethod
     def error(cls, message: str, status_code: int = 400) -> 'WebhookResponse':
-        """创建错误响应"""
+        """creatingerrorresponse"""
         return cls(status_code=status_code, body={"error": message})

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-历史记录相关模型
+historicalrecordrelatedmodel
 ===================================
 
-职责：
-1. 定义历史记录列表和详情模型
-2. 定义分析报告完整模型
+Responsibilities:
+1. definehistoricalrecordlistanddetailsmodel
+2. defineanalysis reportcompletemodel
 """
 
 from typing import Optional, List, Any
@@ -15,21 +15,21 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class HistoryItem(BaseModel):
-    """历史记录摘要（列表展示用）"""
+    """historicalrecordsummary（listdisplayuse）"""
 
-    id: Optional[int] = Field(None, description="分析历史记录主键 ID")
-    query_id: str = Field(..., description="分析记录关联 query_id（批量分析时重复）")
-    stock_code: str = Field(..., description="股票代码")
-    stock_name: Optional[str] = Field(None, description="股票名称")
-    report_type: Optional[str] = Field(None, description="报告类型")
+    id: Optional[int] = Field(None, description="analyzinghistoricalrecordprimary key ID")
+    query_id: str = Field(..., description="analyzingrecordassociation query_id（batchanalyzingwhenduplicate）")
+    stock_code: str = Field(..., description="stock code")
+    stock_name: Optional[str] = Field(None, description="stockname")
+    report_type: Optional[str] = Field(None, description="report type")
     sentiment_score: Optional[int] = Field(
         None, 
-        description="情绪评分 (0-100)",
+        description="sentimentscore (0-100)",
         ge=0,
         le=100
     )
-    operation_advice: Optional[str] = Field(None, description="操作建议")
-    created_at: Optional[str] = Field(None, description="创建时间")
+    operation_advice: Optional[str] = Field(None, description="operationrecommended")
+    created_at: Optional[str] = Field(None, description="creation time")
     
     class Config:
         json_schema_extra = {
@@ -37,22 +37,22 @@ class HistoryItem(BaseModel):
                 "id": 1234,
                 "query_id": "abc123",
                 "stock_code": "600519",
-                "stock_name": "贵州茅台",
+                "stock_name": "Kweichow Moutai",
                 "report_type": "detailed",
                 "sentiment_score": 75,
-                "operation_advice": "持有",
+                "operation_advice": "hold",
                 "created_at": "2024-01-01T12:00:00"
             }
         }
 
 
 class HistoryListResponse(BaseModel):
-    """历史记录列表响应"""
+    """historicalrecordlistresponse"""
     
-    total: int = Field(..., description="总记录数")
-    page: int = Field(..., description="当前页码")
-    limit: int = Field(..., description="每页数量")
-    items: List[HistoryItem] = Field(default_factory=list, description="记录列表")
+    total: int = Field(..., description="totalrecordcount")
+    page: int = Field(..., description="currentpage number")
+    limit: int = Field(..., description="items per page")
+    items: List[HistoryItem] = Field(default_factory=list, description="recordlist")
     
     class Config:
         json_schema_extra = {
@@ -66,39 +66,39 @@ class HistoryListResponse(BaseModel):
 
 
 class DeleteHistoryRequest(BaseModel):
-    """删除历史记录请求"""
+    """deletinghistoricalrecordrequest"""
 
-    record_ids: List[int] = Field(default_factory=list, description="要删除的历史记录主键 ID 列表")
+    record_ids: List[int] = Field(default_factory=list, description="needdeletinghistoricalrecordprimary key ID list")
 
 
 class DeleteHistoryResponse(BaseModel):
-    """删除历史记录响应"""
+    """deletinghistoricalrecordresponse"""
 
-    deleted: int = Field(..., description="实际删除的历史记录数量")
+    deleted: int = Field(..., description="actualdeletinghistoricalrecordquantity")
 
 
 class NewsIntelItem(BaseModel):
-    """新闻情报条目"""
+    """newsintelligenceitemsitem"""
 
-    title: str = Field(..., description="新闻标题")
-    snippet: str = Field("", description="新闻摘要（最多200字）")
-    url: str = Field(..., description="新闻链接")
+    title: str = Field(..., description="newstitle")
+    snippet: str = Field("", description="newssummary（at most200character）")
+    url: str = Field(..., description="newslink")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "title": "公司发布业绩快报，营收同比增长 20%",
-                "snippet": "公司公告显示，季度营收同比增长 20%...",
+                "title": "companypublishperformanceflash report，revenueyear-on-year growth 20%",
+                "snippet": "companyannouncementdisplay，quarterrevenueyear-on-year growth 20%...",
                 "url": "https://example.com/news/123"
             }
         }
 
 
 class NewsIntelResponse(BaseModel):
-    """新闻情报响应"""
+    """newsintelligenceresponse"""
 
-    total: int = Field(..., description="新闻条数")
-    items: List[NewsIntelItem] = Field(default_factory=list, description="新闻列表")
+    total: int = Field(..., description="newscount")
+    items: List[NewsIntelItem] = Field(default_factory=list, description="newslist")
 
     class Config:
         json_schema_extra = {
@@ -110,63 +110,63 @@ class NewsIntelResponse(BaseModel):
 
 
 class ReportMeta(BaseModel):
-    """报告元信息"""
+    """reportyuaninfo"""
 
     model_config = ConfigDict(protected_namespaces=("model_validate", "model_dump"))
 
-    id: Optional[int] = Field(None, description="分析历史记录主键 ID（仅历史报告有此字段）")
-    query_id: str = Field(..., description="分析记录关联 query_id（批量分析时重复）")
-    stock_code: str = Field(..., description="股票代码")
-    stock_name: Optional[str] = Field(None, description="股票名称")
-    report_type: Optional[str] = Field(None, description="报告类型")
-    report_language: Optional[str] = Field(None, description="报告输出语言（zh/en）")
-    created_at: Optional[str] = Field(None, description="创建时间")
-    current_price: Optional[float] = Field(None, description="分析时股价")
-    change_pct: Optional[float] = Field(None, description="分析时涨跌幅(%)")
-    model_used: Optional[str] = Field(None, description="分析使用的 LLM 模型")
+    id: Optional[int] = Field(None, description="analyzinghistoricalrecordprimary key ID（onlyhistoricalreporthasthisfield）")
+    query_id: str = Field(..., description="analyzingrecordassociation query_id（batchanalyzingwhenduplicate）")
+    stock_code: str = Field(..., description="stock code")
+    stock_name: Optional[str] = Field(None, description="stockname")
+    report_type: Optional[str] = Field(None, description="report type")
+    report_language: Optional[str] = Field(None, description="reportoutputlanguage（zh/en）")
+    created_at: Optional[str] = Field(None, description="creation time")
+    current_price: Optional[float] = Field(None, description="analyzingwhenstock price")
+    change_pct: Optional[float] = Field(None, description="analyzingwhenprice change percentage(%)")
+    model_used: Optional[str] = Field(None, description="analyzinguse LLM model")
 
 
 class ReportSummary(BaseModel):
-    """报告概览区"""
+    """reportoverviewzone"""
     
-    analysis_summary: Optional[str] = Field(None, description="关键结论")
-    operation_advice: Optional[str] = Field(None, description="操作建议")
-    trend_prediction: Optional[str] = Field(None, description="趋势预测")
+    analysis_summary: Optional[str] = Field(None, description="keyconclusion")
+    operation_advice: Optional[str] = Field(None, description="operationrecommended")
+    trend_prediction: Optional[str] = Field(None, description="trendprediction")
     sentiment_score: Optional[int] = Field(
         None, 
-        description="情绪评分 (0-100)",
+        description="sentimentscore (0-100)",
         ge=0,
         le=100
     )
-    sentiment_label: Optional[str] = Field(None, description="情绪标签")
+    sentiment_label: Optional[str] = Field(None, description="sentimentlabel")
 
 
 class ReportStrategy(BaseModel):
-    """策略点位区"""
+    """strategypointdigitzone"""
     
-    ideal_buy: Optional[str] = Field(None, description="理想买入价")
-    secondary_buy: Optional[str] = Field(None, description="第二买入价")
-    stop_loss: Optional[str] = Field(None, description="止损价")
-    take_profit: Optional[str] = Field(None, description="止盈价")
+    ideal_buy: Optional[str] = Field(None, description="reasonthinkbuyprice")
+    secondary_buy: Optional[str] = Field(None, description="thetwobuyprice")
+    stop_loss: Optional[str] = Field(None, description="stop lossprice")
+    take_profit: Optional[str] = Field(None, description="take profitprice")
 
 
 class ReportDetails(BaseModel):
-    """报告详情区"""
+    """report detailszone"""
     
-    news_content: Optional[str] = Field(None, description="新闻摘要")
-    raw_result: Optional[Any] = Field(None, description="原始分析结果（JSON）")
-    context_snapshot: Optional[Any] = Field(None, description="分析时上下文快照（JSON）")
-    financial_report: Optional[Any] = Field(None, description="结构化财报摘要（来自 fundamental_context）")
-    dividend_metrics: Optional[Any] = Field(None, description="结构化分红指标（含 TTM 口径）")
+    news_content: Optional[str] = Field(None, description="newssummary")
+    raw_result: Optional[Any] = Field(None, description="rawanalysis result（JSON）")
+    context_snapshot: Optional[Any] = Field(None, description="analyzingwhencontextsnapshot（JSON）")
+    financial_report: Optional[Any] = Field(None, description="structure-izefinancial reportsummary（from fundamental_context）")
+    dividend_metrics: Optional[Any] = Field(None, description="structure-izedividendindicator（include TTM caliber）")
 
 
 class AnalysisReport(BaseModel):
-    """完整分析报告"""
+    """completeanalysis report"""
 
-    meta: ReportMeta = Field(..., description="元信息")
-    summary: ReportSummary = Field(..., description="概览区")
-    strategy: Optional[ReportStrategy] = Field(None, description="策略点位区")
-    details: Optional[ReportDetails] = Field(None, description="详情区")
+    meta: ReportMeta = Field(..., description="yuaninfo")
+    summary: ReportSummary = Field(..., description="overviewzone")
+    strategy: Optional[ReportStrategy] = Field(None, description="strategypointdigitzone")
+    details: Optional[ReportDetails] = Field(None, description="detailszone")
 
     class Config:
         json_schema_extra = {
@@ -174,17 +174,17 @@ class AnalysisReport(BaseModel):
                 "meta": {
                     "query_id": "abc123",
                     "stock_code": "600519",
-                    "stock_name": "贵州茅台",
+                    "stock_name": "Kweichow Moutai",
                     "report_type": "detailed",
                     "report_language": "zh",
                     "created_at": "2024-01-01T12:00:00"
                 },
                 "summary": {
-                    "analysis_summary": "技术面向好，建议持有",
-                    "operation_advice": "持有",
-                    "trend_prediction": "看多",
+                    "analysis_summary": "technical aspect improving，recommendedhold",
+                    "operation_advice": "hold",
+                    "trend_prediction": "bullish",
                     "sentiment_score": 75,
-                    "sentiment_label": "乐观"
+                    "sentiment_label": "optimistic"
                 },
                 "strategy": {
                     "ideal_buy": "1800.00",
@@ -198,13 +198,13 @@ class AnalysisReport(BaseModel):
 
 
 class MarkdownReportResponse(BaseModel):
-    """Markdown 格式报告响应"""
+    """Markdown formatreportresponse"""
 
-    content: str = Field(..., description="Markdown 格式的完整报告内容")
+    content: str = Field(..., description="Markdown formatFull Reportcontent")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "content": "# 📊 贵州茅台 (600519) 分析报告\n\n> 分析日期：**2024-01-01**\n\n..."
+                "content": "# 📊 Kweichow Moutai (600519) analysis report\n\n> analyzingdate：**2024-01-01**\n\n..."
             }
         }

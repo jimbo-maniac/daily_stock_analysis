@@ -65,7 +65,7 @@ class TestTushareFetcherFollowUps(unittest.TestCase):
         )
         fetcher._api.moneyflow_ind_ths.return_value = pd.DataFrame(
             {
-                "industry": ["AI", "消费"],
+                "industry": ["AI", "consumption"],
                 "pct_change": [1.8, -0.6],
             }
         )
@@ -76,7 +76,7 @@ class TestTushareFetcherFollowUps(unittest.TestCase):
             top, bottom = fetcher.get_sector_rankings(n=1)
 
         self.assertEqual(top, [{"name": "AI", "change_pct": 1.8}])
-        self.assertEqual(bottom, [{"name": "消费", "change_pct": -0.6}])
+        self.assertEqual(bottom, [{"name": "consumption", "change_pct": -0.6}])
         self.assertEqual(rate_limit_mock.call_count, 2)
 
     def test_get_chip_distribution_rate_limits_all_tushare_calls(self) -> None:

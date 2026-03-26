@@ -152,29 +152,29 @@ def generate_aliases(name: str) -> List[str]:
 
     # Common alias mappings.
     alias_map = {
-        '贵州茅台': ['茅台'],
-        '中国平安': ['平安'],
-        '平安银行': ['平银'],
-        '招商银行': ['招行'],
-        '五粮液': ['五粮'],
-        '宁德时代': ['宁德'],
-        '比亚迪': ['比亚'],
-        '工商银行': ['工行'],
-        '建设银行': ['建行'],
-        '农业银行': ['农行'],
-        '中国银行': ['中行'],
-        '交通银行': ['交行'],
-        '兴业银行': ['兴业'],
-        '浦发银行': ['浦发'],
-        '民生银行': ['民生'],
-        '中信证券': ['中信'],
-        '东方财富': ['东财'],
-        '海康威视': ['海康'],
-        '隆基绿能': ['隆基'],
-        '中国神华': ['神华'],
-        '长江电力': ['长电'],
-        '中国石化': ['石化'],
-        '中国石油': ['石油'],
+        'Kweichow Moutai': ['Maotai'],
+        'Ping An of China': ['Ping An'],
+        'Ping An Bank': ['Ping An Bank'],
+        'China Merchants Bank': ['inviterow'],
+        'Wuliangye': ['Wuliang'],
+        'CATL': ['Ningde'],
+        'BYD': ['Biya'],
+        'ICBC': ['Industrialrow'],
+        'Constructionbank': ['Constructionrow'],
+        'Agricultural Bank': ['Agriculturalrow'],
+        'Bank of China': ['inrow'],
+        'Bank of Communications': ['exchangerow'],
+        'Industrial Bank': ['Industrial'],
+        'SPDB': ['Pudongsend'],
+        'Minshengbank': ['Minsheng'],
+        'CITIC Securities': ['CITIC'],
+        'Eastmoney': ['Eastmoney'],
+        'Hikvision': ['Hikvision'],
+        'LONGi Green Energy': ['Longbase'],
+        'China Shenhua': ['Shenhua'],
+        'Yangtze Power': ['longElectric'],
+        'Sinopec': ['Petrochemical'],
+        'PetroChina': ['Petroleum'],
     }
 
     if name in alias_map:
@@ -227,13 +227,13 @@ def build_stock_index(stocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 def compress_index(index: List[Dict[str, Any]]) -> List[List]:
     """
-    压缩索引为数组格式以减少文件大小
+    compressionindexasarrayformatwithreducefilesize
 
     Args:
-        index: 原始索引
+        index: rawindex
 
     Returns:
-        压缩后的索引
+        compressionafterindex
     """
     compressed = []
     for item in index:
@@ -253,67 +253,67 @@ def compress_index(index: List[Dict[str, Any]]) -> List[List]:
 
 
 def main():
-    """主函数"""
+    """mainfunction"""
     print("=" * 60)
-    print("股票索引生成工具（从 CSV）")
+    print("stockindexgeneratingtool（from CSV）")
     print("=" * 60)
 
-    # 查找 CSV 文件
+    # find CSV file
     logs_dir = Path(__file__).parent.parent / "logs"
     csv_files = list(logs_dir.glob("stock_basic_*.csv"))
 
     if not csv_files:
-        print("[Error] 未找到 CSV 文件：logs/stock_basic_*.csv")
+        print("[Error] not found CSV file：logs/stock_basic_*.csv")
         return 1
 
-    # 使用最新的 CSV 文件
+    # uselatest CSV file
     csv_file = sorted(csv_files)[-1]
-    print(f"\n[1/5] 读取 CSV 文件：{csv_file.name}")
+    print(f"\n[1/5] reading CSV file：{csv_file.name}")
 
-    # 加载数据
+    # loadingdata
     stocks = load_csv_data(csv_file)
-    print(f"      共读取 {len(stocks)} 只股票")
+    print(f"      totalreading {len(stocks)} onlystock")
 
-    # 生成拼音提示
+    # generatingpinyinTip
     if not PYPINYIN_AVAILABLE:
-        print("\n[提示] 安装 pypinyin 可获得拼音搜索功能：")
+        print("\n[Tip] setup pypinyin canobtainpinyinsearchfeature：")
         print("       pip install pypinyin")
 
-    print(f"\n[2/5] 生成索引数据...")
+    print(f"\n[2/5] generatingindexdata...")
     index = build_stock_index(stocks)
 
-    # 输出路径
+    # outputpath
     output_path = (
         Path(__file__).parent.parent / "apps" / "dsa-web" / "public" / "stocks.index.json"
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n[3/5] 压缩索引数据...")
+    print(f"\n[3/5] compressionindexdata...")
     compressed = compress_index(index)
 
-    print(f"\n[4/5] 写入文件：{output_path}")
+    print(f"\n[4/5] writingfile：{output_path}")
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(compressed, f, ensure_ascii=False, separators=(',', ':'))
 
     file_size = output_path.stat().st_size
-    print(f"      文件大小：{file_size / 1024:.2f} KB")
+    print(f"      filesize：{file_size / 1024:.2f} KB")
 
-    # 验证文件
-    print(f"\n[5/5] 验证文件...")
+    # verificationfile
+    print(f"\n[5/5] verificationfile...")
     with open(output_path, 'r', encoding='utf-8') as f:
         test_data = json.load(f)
-        print(f"      验证通过：{len(test_data)} 条记录")
+        print(f"      verificationvia：{len(test_data)} itemsrecord")
 
-    # 统计信息
+    # statistics
     market_stats = {}
     for item in index:
         market = item['market']
         market_stats[market] = market_stats.get(market, 0) + 1
 
     print(f"\n{'=' * 60}")
-    print("生成完成！市场分布：")
+    print("generatingcompleted！marketminutedistribute：")
     for market, count in sorted(market_stats.items()):
-        print(f"  - {market}: {count} 只")
+        print(f"  - {market}: {count} only")
     print(f"{'=' * 60}")
 
     return 0

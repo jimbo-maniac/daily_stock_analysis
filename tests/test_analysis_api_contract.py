@@ -55,7 +55,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         pipeline_instance = MagicMock()
         pipeline_instance.process_single_stock.return_value = SimpleNamespace(
             code="600519",
-            name="贵州茅台",
+            name="Kweichow Moutai",
             current_price=1234.56,
             change_pct=1.23,
             model_used="test-model",
@@ -81,7 +81,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         result = service._build_analysis_response(
             SimpleNamespace(
                 code="AAPL",
-                name="股票AAPL",
+                name="stockAAPL",
                 current_price=180.35,
                 change_pct=1.04,
                 model_used="test-model",
@@ -116,7 +116,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
             },
             query_id="q1",
             stock_code="600519",
-            stock_name="贵州茅台",
+            stock_name="Kweichow Moutai",
             context_snapshot={
                 "enhanced_context": {
                     "fundamental_context": {
@@ -227,7 +227,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         self.assertEqual(ctx.exception.status_code, 400)
         self.assertEqual(
             ctx.exception.detail["message"],
-            "股票代码不能为空或仅包含空白字符",
+            "stock codecannotis emptyor onlypackageincluding whitespace",
         )
 
     def test_trigger_analysis_rejects_obviously_invalid_mixed_input_before_resolution(self) -> None:
@@ -248,7 +248,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
                 )
 
         self.assertEqual(ctx.exception.status_code, 400)
-        self.assertEqual(ctx.exception.detail["message"], "请输入有效的股票代码或股票名称")
+        self.assertEqual(ctx.exception.detail["message"], "pleaseinputvalidstock codeorstockname")
         resolve_mock.assert_not_called()
 
     def test_trigger_analysis_rejects_unresolvable_alpha_garbage(self) -> None:
@@ -270,7 +270,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
                 )
 
         self.assertEqual(ctx.exception.status_code, 400)
-        self.assertEqual(ctx.exception.detail["message"], "请输入有效的股票代码或股票名称")
+        self.assertEqual(ctx.exception.detail["message"], "pleaseinputvalidstock codeorstockname")
         queue_mock.assert_not_called()
 
     def test_trigger_analysis_accepts_us_suffix_code(self) -> None:
@@ -318,10 +318,10 @@ class AnalysisApiContractTestCase(unittest.TestCase):
              patch("api.v1.endpoints.analysis.get_task_queue", return_value=queue):
             response = trigger_analysis(
                 request=SimpleNamespace(
-                    stock_code="西安奕材-U",
+                    stock_code="Xi'an Yicai-U",
                     stock_codes=None,
                     stock_name=None,
-                    original_query="西安奕材-U",
+                    original_query="Xi'an Yicai-U",
                     selection_source="manual",
                     report_type="detailed",
                     force_refresh=False,
@@ -334,7 +334,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         queue.submit_tasks_batch.assert_called_once_with(
             stock_codes=["688783"],
             stock_name=None,
-            original_query="西安奕材-U",
+            original_query="Xi'an Yicai-U",
             selection_source="manual",
             report_type="detailed",
             force_refresh=False,
@@ -351,10 +351,10 @@ class AnalysisApiContractTestCase(unittest.TestCase):
              patch("api.v1.endpoints.analysis.get_task_queue", return_value=queue):
             response = trigger_analysis(
                 request=SimpleNamespace(
-                    stock_code="贵州茅台",
+                    stock_code="Kweichow Moutai",
                     stock_codes=None,
                     stock_name=None,
-                    original_query="贵州茅台",
+                    original_query="Kweichow Moutai",
                     selection_source="manual",
                     report_type="detailed",
                     force_refresh=False,
@@ -367,7 +367,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         queue.submit_tasks_batch.assert_called_once_with(
             stock_codes=["600519"],
             stock_name=None,
-            original_query="贵州茅台",
+            original_query="Kweichow Moutai",
             selection_source="manual",
             report_type="detailed",
             force_refresh=False,
@@ -471,8 +471,8 @@ class AnalysisApiContractTestCase(unittest.TestCase):
                 request=SimpleNamespace(
                     stock_code=None,
                     stock_codes=["600519", "000001"],
-                    stock_name="贵州茅台",
-                    original_query="茅台,平安银行",
+                    stock_name="Kweichow Moutai",
+                    original_query="Maotai,Ping An Bank",
                     selection_source="import",
                     report_type="detailed",
                     force_refresh=False,
@@ -485,7 +485,7 @@ class AnalysisApiContractTestCase(unittest.TestCase):
         queue.submit_tasks_batch.assert_called_once_with(
             stock_codes=["600519", "000001"],
             stock_name=None,
-            original_query="茅台,平安银行",
+            original_query="Maotai,Ping An Bank",
             selection_source="import",
             report_type="detailed",
             force_refresh=False,
@@ -580,7 +580,7 @@ class BatchTaskQueueContractTestCase(unittest.TestCase):
         queue = AnalysisTaskQueue(max_workers=1)
         queue._executor = type("ExecutorStub", (), {"submit": lambda self, *args, **kwargs: Future()})()
 
-        with self.assertRaisesRegex(ValueError, "股票代码不能为空或仅包含空白字符"):
+        with self.assertRaisesRegex(ValueError, "stock codecannotis emptyor onlypackageincluding whitespace"):
             queue.submit_task("   ", report_type="detailed")
 
         self.assertEqual(queue._tasks, {})

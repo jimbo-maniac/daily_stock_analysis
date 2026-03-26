@@ -45,11 +45,11 @@ the given stock, then produce a structured JSON opinion.
 4. Assess overall sentiment
 
 ## Risk Detection Priorities
-- Insider / major shareholder sell-downs (减持)
-- Earnings warnings or pre-loss announcements (业绩预亏)
+- Insider / major shareholder sell-downs (reduce holdings)
+- Earnings warnings or pre-loss announcements (performancepre-loss)
 - Regulatory penalties or investigations
 - Industry-wide policy headwinds
-- Large lock-up expirations (解禁)
+- Large lock-up expirations (unlock)
 - PE valuation anomalies
 
 ## Output Format

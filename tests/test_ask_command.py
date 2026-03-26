@@ -16,14 +16,14 @@ class AskCommandSkillSelectionTestCase(unittest.TestCase):
         skills = [
             Skill(
                 name="box_oscillation",
-                display_name="箱体震荡",
+                display_name="box patternoscillation",
                 description="box",
                 instructions="box",
                 default_priority=30,
             ),
             Skill(
                 name="wave_theory",
-                display_name="波浪理论",
+                display_name="Elliott Wave Theory",
                 description="wave",
                 instructions="wave",
                 default_active=True,
@@ -39,25 +39,25 @@ class AskCommandSkillSelectionTestCase(unittest.TestCase):
         skills = [
             Skill(
                 name="bull_trend",
-                display_name="默认多头趋势",
+                display_name="defaultlong positiontrend",
                 description="trend",
                 instructions="trend",
-                aliases=["趋势", "趋势分析"],
+                aliases=["trend", "trend analysis"],
                 default_active=True,
                 default_priority=10,
             ),
             Skill(
                 name="chan_theory",
-                display_name="缠论",
+                display_name="Chan theory",
                 description="chan",
                 instructions="chan",
-                aliases=["缠论", "缠论分析"],
+                aliases=["Chan theory", "Chan theoryanalyzing"],
                 default_priority=40,
             ),
         ]
 
         with patch.object(AskCommand, "_load_skills", return_value=skills):
-            self.assertEqual(command._parse_skill(["600519", "请", "用缠论分析"]), "chan_theory")
+            self.assertEqual(command._parse_skill(["600519", "please", "using Chan theoryanalyzing"]), "chan_theory")
 
 
 if __name__ == "__main__":

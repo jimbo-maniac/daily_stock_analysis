@@ -34,7 +34,7 @@ class _DummyResponse:
 
 def _make_sina_payload() -> str:
     fields = [
-        "大秦铁路", "5.100", "5.000", "5.190", "5.200", "5.050", "5.180", "5.190",
+        "Daqin Railway", "5.100", "5.000", "5.190", "5.200", "5.050", "5.180", "5.190",
         "123456", "789012"
     ]
     fields.extend(["0"] * 20)
@@ -44,7 +44,7 @@ def _make_sina_payload() -> str:
 
 def _make_tencent_payload() -> str:
     fields = ["0"] * 50
-    fields[1] = "大秦铁路"
+    fields[1] = "Daqin Railway"
     fields[2] = "601006"
     fields[3] = "5.19"
     fields[4] = "5.00"
@@ -83,11 +83,11 @@ def test_sina_realtime_success_logs_endpoint(caplog, monkeypatch, akshare_fetche
         quote = akshare_fetcher._get_stock_realtime_quote_sina("601006")
 
     assert quote is not None
-    assert quote.name == "大秦铁路"
+    assert quote.name == "Daqin Railway"
     assert quote.price == 5.19
     assert breaker.successes == ["akshare_sina"]
     assert f"endpoint={SINA_REALTIME_ENDPOINT}" in caplog.text
-    assert "[实时行情-新浪] 601006 大秦铁路:" in caplog.text
+    assert "[realtimequote/market data-Sina] 601006 Daqin Railway:" in caplog.text
 
 
 def test_sina_realtime_remote_disconnect_logs_category(caplog, monkeypatch, akshare_fetcher):
@@ -108,7 +108,7 @@ def test_sina_realtime_remote_disconnect_logs_category(caplog, monkeypatch, aksh
     assert source_key == "akshare_sina"
     assert "category=remote_disconnect" in message
     assert f"endpoint={SINA_REALTIME_ENDPOINT}" in caplog.text
-    assert "新浪 实时行情接口失败:" in caplog.text
+    assert "Sina realtimequote/market dataAPI/interfacefailed:" in caplog.text
 
 
 def test_tencent_realtime_http_status_logs_endpoint(caplog, monkeypatch, akshare_fetcher):
@@ -143,8 +143,8 @@ def test_tencent_realtime_success_logs_endpoint(caplog, monkeypatch, akshare_fet
         quote = akshare_fetcher._get_stock_realtime_quote_tencent("601006")
 
     assert quote is not None
-    assert quote.name == "大秦铁路"
+    assert quote.name == "Daqin Railway"
     assert quote.price == 5.19
     assert breaker.successes == ["akshare_tencent"]
     assert f"endpoint={TENCENT_REALTIME_ENDPOINT}" in caplog.text
-    assert "[实时行情-腾讯] 601006 大秦铁路:" in caplog.text
+    assert "[realtimequote/market data-Tencent] 601006 Daqin Railway:" in caplog.text

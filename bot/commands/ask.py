@@ -4,7 +4,7 @@ Ask command - analyze a stock using a specific Agent skill.
 
 Usage:
     /ask 600519                        -> Analyze with default skill
-    /ask 600519 用缠论分析              -> Parse skill from message
+    /ask 600519 using Chan theoryanalyzing              -> Parse skill from message
     /ask 600519 chan_theory             -> Specify skill id directly
 """
 
@@ -27,9 +27,9 @@ class AskCommand(BotCommand):
 
     Usage:
         /ask 600519                    -> Analyze with default skill
-        /ask 600519 用缠论分析          -> Automatically selects chan_theory
+        /ask 600519 using Chan theoryanalyzing          -> Automatically selects chan_theory
         /ask 600519 chan_theory         -> Directly specify skill id
-        /ask hk00700 波浪理论看看       -> HK stock with wave_theory
+        /ask hk00700 Elliott Wave Theorycheck       -> HK stock with wave_theory
     """
 
     @property
@@ -38,20 +38,20 @@ class AskCommand(BotCommand):
 
     @property
     def aliases(self) -> List[str]:
-        return ["问股"]
+        return ["questionstocks"]
 
     @property
     def description(self) -> str:
-        return "使用 Agent 技能分析股票"
+        return "use Agent skillanalyzingstock"
 
     @property
     def usage(self) -> str:
-        return "/ask <股票代码> [技能名称]"
+        return "/ask <stock code> [skillname]"
 
     def validate_args(self, args: List[str]) -> Optional[str]:
         """Validate arguments."""
         if not args:
-            return "请输入股票代码。用法: /ask <股票代码> [技能名称]\n示例: /ask 600519 用缠论分析"
+            return "pleaseinputstock code。usage: /ask <stock code> [skillname]\nExample: /ask 600519 using Chan theoryanalyzing"
 
         code = args[0].upper()
         is_a_stock = re.match(r"^\d{6}$", code)
@@ -59,7 +59,7 @@ class AskCommand(BotCommand):
         is_us_stock = re.match(r"^[A-Z]{1,5}(\.[A-Z]{1,2})?$", code)
 
         if not (is_a_stock or is_hk_stock or is_us_stock):
-            return f"无效的股票代码: {code}（A股6位数字 / 港股HK+5位数字 / 美股1-5个字母）"
+            return f"invalid stock code: {code}（A-share6digit number / HK stockHK+5digit number / US stock1-5countcharacterparent）"
 
         return None
 
@@ -121,7 +121,7 @@ class AskCommand(BotCommand):
 
         if not config.agent_mode:
             return BotResponse.text_response(
-                "⚠️ Agent 模式未开启，无法使用问股功能。\n请在配置中设置 `AGENT_MODE=true`。"
+                "⚠️ Agent modenotenable，unable tousequestionstocksfeature。\nplease inconfigurationinsettings `AGENT_MODE=true`。"
             )
 
         code = canonical_stock_code(args[0])
@@ -135,11 +135,11 @@ class AskCommand(BotCommand):
             executor = build_agent_executor(config, skills=[skill_id] if skill_id else None)
 
             # Build message
-            user_msg = f"请分析股票 {code}"
+            user_msg = f"pleaseanalyzingstock {code}"
             if skill_id:
-                user_msg = f"请使用 {skill_id} 技能分析股票 {code}"
+                user_msg = f"please use {skill_id} skillanalyzingstock {code}"
             if skill_text:
-                user_msg = f"请分析股票 {code}，{skill_text}"
+                user_msg = f"pleaseanalyzingstock {code}，{skill_text}"
 
             # Each /ask invocation is a self-contained single-shot analysis; isolate
             # sessions per request so that different stocks or retry attempts never
@@ -156,12 +156,12 @@ class AskCommand(BotCommand):
 
                 header = f"📊 {code}\n{'─' * 30}\n"
                 if skill_name:
-                    header = f"📊 {code} | 技能: {skill_name}\n{'─' * 30}\n"
+                    header = f"📊 {code} | skill: {skill_name}\n{'─' * 30}\n"
                 return BotResponse.text_response(header + result.content)
             else:
-                return BotResponse.text_response(f"⚠️ 分析失败: {result.error}")
+                return BotResponse.text_response(f"⚠️ analyzingfailed: {result.error}")
 
         except Exception as e:
             logger.error(f"Ask command failed: {e}")
             logger.exception("Ask error details:")
-            return BotResponse.text_response(f"⚠️ 问股执行出错: {str(e)}")
+            return BotResponse.text_response(f"⚠️ questionstocksexecuteerror: {str(e)}")

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-自定义 Webhook 发送提醒服务
+custom Webhook sendingreminderservice
 
-职责：
-1. 发送自定义 Webhook 消息
+Responsibilities:
+1. sendingcustom Webhook message
 """
 import logging
 import json
@@ -20,10 +20,10 @@ class CustomWebhookSender:
 
     def __init__(self, config: Config):
         """
-        初始化自定义 Webhook 配置
+        initializingcustom Webhook configuration
 
         Args:
-            config: 配置对象
+            config: configurationobject
         """
         self._custom_webhook_urls = getattr(config, 'custom_webhook_urls', []) or []
         self._custom_webhook_bearer_token = getattr(config, 'custom_webhook_bearer_token', None)
@@ -31,58 +31,58 @@ class CustomWebhookSender:
  
     def send_to_custom(self, content: str) -> bool:
         """
-        推送消息到自定义 Webhook
+        pushmessagetocustom Webhook
         
-        支持任意接受 POST JSON 的 Webhook 端点
-        默认发送格式：{"text": "消息内容", "content": "消息内容"}
+        supportarbitraryaccept POST JSON  Webhook endpoint
+        defaultsendingformat：{"text": "messagecontent", "content": "messagecontent"}
         
-        适用于：
-        - 钉钉机器人
+        suitablefor：
+        - DingTalkbot
         - Discord Webhook
         - Slack Incoming Webhook
-        - 自建通知服务
-        - 其他支持 POST JSON 的服务
+        - self-builtnotificationservice
+        - othersupport POST JSON service
         
         Args:
-            content: 消息内容（Markdown 格式）
+            content: messagecontent（Markdown format）
             
         Returns:
-            是否至少有一个 Webhook 发送成功
+            whetherat leasthasonecount Webhook sendingsuccessful
         """
         if not self._custom_webhook_urls:
-            logger.warning("未配置自定义 Webhook，跳过推送")
+            logger.warning("notconfigurationcustom Webhook，skippush")
             return False
         
         success_count = 0
         
         for i, url in enumerate(self._custom_webhook_urls):
             try:
-                # 通用 JSON 格式，兼容大多数 Webhook
-                # 钉钉格式: {"msgtype": "text", "text": {"content": "xxx"}}
-                # Slack 格式: {"text": "xxx"}
-                # Discord 格式: {"content": "xxx"}
+                # generic JSON format，compatiblelargemultiplecount Webhook
+                # DingTalkformat: {"msgtype": "text", "text": {"content": "xxx"}}
+                # Slack format: {"text": "xxx"}
+                # Discord format: {"content": "xxx"}
                 
-                # 钉钉机器人对 body 有字节上限（约 20000 bytes），超长需要分批发送
+                # DingTalkbotto body hasbytesupper limit（approximately 20000 bytes），extra longneedin batchessending
                 if self._is_dingtalk_webhook(url):
                     if self._send_dingtalk_chunked(url, content, max_bytes=20000):
-                        logger.info(f"自定义 Webhook {i+1}（钉钉）推送成功")
+                        logger.info(f"custom Webhook {i+1}（DingTalk）pushsuccessful")
                         success_count += 1
                     else:
-                        logger.error(f"自定义 Webhook {i+1}（钉钉）推送失败")
+                        logger.error(f"custom Webhook {i+1}（DingTalk）pushfailed")
                     continue
 
-                # 其他 Webhook：单次发送
+                # other Webhook：singlesending
                 payload = self._build_custom_webhook_payload(url, content)
                 if self._post_custom_webhook(url, payload, timeout=30):
-                    logger.info(f"自定义 Webhook {i+1} 推送成功")
+                    logger.info(f"custom Webhook {i+1} pushsuccessful")
                     success_count += 1
                 else:
-                    logger.error(f"自定义 Webhook {i+1} 推送失败")
+                    logger.error(f"custom Webhook {i+1} pushfailed")
                     
             except Exception as e:
-                logger.error(f"自定义 Webhook {i+1} 推送异常: {e}")
+                logger.error(f"custom Webhook {i+1} pushabnormal: {e}")
         
-        logger.info(f"自定义 Webhook 推送完成：成功 {success_count}/{len(self._custom_webhook_urls)}")
+        logger.info(f"custom Webhook pushcompleted：successful {success_count}/{len(self._custom_webhook_urls)}")
         return success_count > 0
 
     
@@ -97,7 +97,7 @@ class CustomWebhookSender:
             try:
                 if self._is_discord_webhook(url):
                     files = {"file": ("report.png", image_bytes, "image/png")}
-                    data = {"content": "📈 股票智能分析报告"}
+                    data = {"content": "📈 stockintelligentanalysis report"}
                     headers = {"User-Agent": "StockAnalysis/1.0"}
                     if self._custom_webhook_bearer_token:
                         headers["Authorization"] = (
@@ -108,11 +108,11 @@ class CustomWebhookSender:
                         verify=self._webhook_verify_ssl
                     )
                     if response.status_code in (200, 204):
-                        logger.info("自定义 Webhook %d（Discord 图片）推送成功", i + 1)
+                        logger.info("custom Webhook %d（Discord image）pushsuccessful", i + 1)
                         success_count += 1
                     else:
                         logger.error(
-                            "自定义 Webhook %d（Discord 图片）推送失败: HTTP %s",
+                            "custom Webhook %d（Discord image）pushfailed: HTTP %s",
                             i + 1, response.status_code,
                         )
                 else:
@@ -120,15 +120,15 @@ class CustomWebhookSender:
                         payload = self._build_custom_webhook_payload(url, fallback_content)
                         if self._post_custom_webhook(url, payload, timeout=30):
                             logger.info(
-                                "自定义 Webhook %d（图片不支持，回退文本）推送成功", i + 1
+                                "custom Webhook %d（imagenot supported，rollbacktext）pushsuccessful", i + 1
                             )
                             success_count += 1
                     else:
                         logger.warning(
-                            "自定义 Webhook %d 不支持图片，且无回退内容，跳过", i + 1
+                            "custom Webhook %d not supportedimage，andnorollbackcontent，skip", i + 1
                         )
             except Exception as e:
-                logger.error("自定义 Webhook %d 图片推送异常: %s", i + 1, e)
+                logger.error("custom Webhook %d imagepushabnormal: %s", i + 1, e)
         return success_count > 0
 
     def _post_custom_webhook(self, url: str, payload: dict, timeout: int = 30) -> bool:
@@ -136,38 +136,38 @@ class CustomWebhookSender:
             'Content-Type': 'application/json; charset=utf-8',
             'User-Agent': 'StockAnalysis/1.0',
         }
-        # 支持 Bearer Token 认证（#51）
+        # support Bearer Token authentication（#51）
         if self._custom_webhook_bearer_token:
             headers['Authorization'] = f'Bearer {self._custom_webhook_bearer_token}'
         body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
         response = requests.post(url, data=body, headers=headers, timeout=timeout, verify=self._webhook_verify_ssl)
         if response.status_code == 200:
             return True
-        logger.error(f"自定义 Webhook 推送失败: HTTP {response.status_code}")
-        logger.debug(f"响应内容: {response.text[:200]}")
+        logger.error(f"custom Webhook pushfailed: HTTP {response.status_code}")
+        logger.debug(f"responsecontent: {response.text[:200]}")
         return False
     
     def _build_custom_webhook_payload(self, url: str, content: str) -> dict:
         """
-        根据 URL 构建对应的 Webhook payload
+        based on URL buildtoshould Webhook payload
         
-        自动识别常见服务并使用对应格式
+        auto-detectnormallyseeserviceandusetoshouldformat
         """
         url_lower = url.lower()
         
-        # 钉钉机器人
+        # DingTalkbot
         if 'dingtalk' in url_lower or 'oapi.dingtalk.com' in url_lower:
             return {
                 "msgtype": "markdown",
                 "markdown": {
-                    "title": "股票分析报告",
+                    "title": "stockanalysis report",
                     "text": content
                 }
             }
         
         # Discord Webhook
         if 'discord.com/api/webhooks' in url_lower or 'discordapp.com/api/webhooks' in url_lower:
-            # Discord 限制 2000 字符
+            # Discord constraint 2000 character
             truncated = content[:1900] + "..." if len(content) > 1900 else content
             return {
                 "content": truncated
@@ -180,15 +180,15 @@ class CustomWebhookSender:
                 "mrkdwn": True
             }
         
-        # Bark (iOS 推送)
+        # Bark (iOS push)
         if 'api.day.app' in url_lower:
             return {
-                "title": "股票分析报告",
-                "body": content[:4000],  # Bark 限制
+                "title": "stockanalysis report",
+                "body": content[:4000],  # Bark constraint
                 "group": "stock"
             }
         
-        # 通用格式（兼容大多数服务）
+        # genericformat（compatiblelargemultiplecountservice）
         return {
             "text": content,
             "content": content,
@@ -199,7 +199,7 @@ class CustomWebhookSender:
     def _send_dingtalk_chunked(self, url: str, content: str, max_bytes: int = 20000) -> bool:
         import time as _time
 
-        # 为 payload 开销预留空间，避免 body 超限
+        # as payload overheadreserveemptybetween，avoid body over limit
         budget = max(1000, max_bytes - 1500)
         chunks = chunk_content_by_max_bytes(content, budget)
         if not chunks:
@@ -213,12 +213,12 @@ class CustomWebhookSender:
             payload = {
                 "msgtype": "markdown",
                 "markdown": {
-                    "title": "股票分析报告",
+                    "title": "stockanalysis report",
                     "text": chunk + marker,
                 },
             }
 
-            # 如果仍超限（极端情况下），再按字节硬截断一次
+            # ifstillover limit（extremeendsituationbelow），againbybyteshardtruncateonce
             body_bytes = len(json.dumps(payload, ensure_ascii=False).encode('utf-8'))
             if body_bytes > max_bytes:
                 hard_budget = max(200, budget - (body_bytes - max_bytes) - 200)
@@ -227,7 +227,7 @@ class CustomWebhookSender:
             if self._post_custom_webhook(url, payload, timeout=30):
                 ok += 1
             else:
-                logger.error(f"钉钉分批发送失败: 第 {idx+1}/{total} 批")
+                logger.error(f"DingTalkin batchessendingfailed: the {idx+1}/{total} batch")
 
             if idx < total - 1:
                 _time.sleep(1)

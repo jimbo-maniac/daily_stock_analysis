@@ -34,7 +34,7 @@ _BUILD_INPUT_DIRS = ("src", "public")
 
 
 def _is_truthy_env(var_name: str, default: str = "true") -> bool:
-    """解析常见的环境变量真值/假值表达（大小写不敏感）。"""
+    """parsingnormallyseeenvironment variablerealvalue/fakevaluetablereach（sizewritenotsensitive）。"""
     value = os.getenv(var_name, default).strip().lower()
     return value not in _FALSEY_ENV_VALUES
 
@@ -107,14 +107,14 @@ def _needs_frontend_build(frontend_dir: Path, force_build: bool) -> tuple[bool, 
 def _run_frontend_commands(commands: Sequence[Sequence[str]], frontend_dir: Path) -> bool:
     try:
         for command in commands:
-            logger.info("执行前端命令: %s", " ".join(command))
+            logger.info("executefrontendcommand: %s", " ".join(command))
             subprocess.run(command, cwd=frontend_dir, check=True)
-        logger.info("前端静态资源构建完成")
+        logger.info("frontendstaticcapitalsourcebuildcompleted")
         return True
     except subprocess.CalledProcessError as exc:
         cmd_display = " ".join(exc.cmd) if isinstance(exc.cmd, (list, tuple)) else str(exc.cmd)
         logger.error(
-            "前端命令执行失败（exit_code=%s）: %s",
+            "frontendcommandexecutefailed（exit_code=%s）: %s",
             getattr(exc, "returncode", "N/A"),
             cmd_display,
         )
@@ -142,24 +142,24 @@ def prepare_webui_frontend_assets() -> bool:
 
     if not auto_build_enabled:
         if artifact_index.exists():
-            logger.info("WEBUI_AUTO_BUILD=false，检测到前端静态产物: %s", artifact_index)
+            logger.info("WEBUI_AUTO_BUILD=false，detecttofrontendstaticproduct: %s", artifact_index)
             return True
-        logger.warning("未检测到 WebUI 前端静态产物: %s", artifact_index)
-        logger.warning("当前配置 WEBUI_AUTO_BUILD=false，不会在后端启动时自动编译前端")
-        logger.warning("请先手动构建前端: %s", _manual_build_command(frontend_dir))
-        logger.warning("如需启动时自动构建，可设置 WEBUI_AUTO_BUILD=true")
+        logger.warning("not detected WebUI frontendstaticproduct: %s", artifact_index)
+        logger.warning("currentconfiguration WEBUI_AUTO_BUILD=false，notwillinbackendstartautomatically whencompilefrontend")
+        logger.warning("pleasefirstmanualbuildfrontend: %s", _manual_build_command(frontend_dir))
+        logger.warning("e.g.needstartautomatically whenbuild，cansettings WEBUI_AUTO_BUILD=true")
         return False
 
     package_json = frontend_dir / "package.json"
     if not package_json.exists():
-        logger.warning("未找到前端项目，无法自动构建: %s", package_json)
-        logger.warning("可先手动检查前端目录或关闭 WEBUI_AUTO_BUILD")
+        logger.warning("not foundfrontenditemitem，unable toautomaticbuild: %s", package_json)
+        logger.warning("canfirstmanualcheckfrontenddirectoryorclose WEBUI_AUTO_BUILD")
         return False
 
     npm_path = shutil.which("npm")
     if not npm_path:
-        logger.warning("未检测到 npm，无法自动构建前端")
-        logger.warning("请先手动构建前端静态资源: %s", _manual_build_command(frontend_dir))
+        logger.warning("not detected npm，unable toautomaticbuildfrontend")
+        logger.warning("pleasefirstmanualbuildfrontendstaticcapitalsource: %s", _manual_build_command(frontend_dir))
         return False
 
     force_build = _is_truthy_env("WEBUI_FORCE_BUILD", "false")
@@ -175,7 +175,7 @@ def prepare_webui_frontend_assets() -> bool:
     needs_build, artifact_index = _needs_frontend_build(frontend_dir=frontend_dir, force_build=force_build)
 
     if not needs_install and not needs_build:
-        logger.info("前端静态资源已是最新，跳过 npm install/build")
+        logger.info("frontendstaticcapitalsourcealreadyislatest，skip npm install/build")
         return True
 
     commands = []
@@ -186,7 +186,7 @@ def prepare_webui_frontend_assets() -> bool:
         commands.append([npm_path, "run", "build"])
 
     logger.info(
-        "前端构建检查结果: needs_install=%s, needs_build=%s, artifact=%s",
+        "frontendbuildcheckresult: needs_install=%s, needs_build=%s, artifact=%s",
         needs_install,
         needs_build,
         artifact_index,

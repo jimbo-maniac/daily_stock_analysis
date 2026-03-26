@@ -327,7 +327,7 @@ class PortfolioRiskService:
             if fallback is None:
                 fallback = name
             type_text = str(item.get("type") or "").strip().lower()
-            if "行业" in type_text or "industry" in type_text:
+            if "industry" in type_text or "industry" in type_text:
                 preferred = name
                 break
         return preferred or fallback

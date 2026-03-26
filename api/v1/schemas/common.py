@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-通用响应模型
+genericresponsemodel
 ===================================
 
-职责：
-1. 定义通用的响应模型（HealthResponse, ErrorResponse 等）
-2. 提供统一的响应格式
+Responsibilities:
+1. definegenericresponsemodel（HealthResponse, ErrorResponse etc）
+2. provide unifiedresponseformat
 """
 
 from typing import Optional, Any
@@ -15,10 +15,10 @@ from pydantic import BaseModel, Field
 
 
 class RootResponse(BaseModel):
-    """API 根路由响应"""
+    """API rootrouteresponse"""
     
-    message: str = Field(..., description="API 运行状态消息", example="Daily Stock Analysis API is running")
-    version: Optional[str] = Field(None, description="API 版本", example="1.0.0")
+    message: str = Field(..., description="API runningstatusmessage", example="Daily Stock Analysis API is running")
+    version: Optional[str] = Field(None, description="API version", example="1.0.0")
     
     class Config:
         json_schema_extra = {
@@ -30,10 +30,10 @@ class RootResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """健康检查响应"""
+    """healthcheckresponse"""
     
-    status: str = Field(..., description="服务状态", example="ok")
-    timestamp: Optional[str] = Field(None, description="时间戳")
+    status: str = Field(..., description="servicestatus", example="ok")
+    timestamp: Optional[str] = Field(None, description="timestamp")
     
     class Config:
         json_schema_extra = {
@@ -45,34 +45,34 @@ class HealthResponse(BaseModel):
 
 
 class ErrorResponse(BaseModel):
-    """错误响应"""
+    """errorresponse"""
     
-    error: str = Field(..., description="错误类型", example="validation_error")
-    message: str = Field(..., description="错误详情", example="请求参数错误")
-    detail: Optional[Any] = Field(None, description="附加错误信息")
+    error: str = Field(..., description="errortype", example="validation_error")
+    message: str = Field(..., description="errordetails", example="requestparametererror")
+    detail: Optional[Any] = Field(None, description="attacherror message")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "error": "not_found",
-                "message": "资源不存在",
+                "message": "capitalsourcenot found",
                 "detail": None
             }
         }
 
 
 class SuccessResponse(BaseModel):
-    """通用成功响应"""
+    """genericsuccessfulresponse"""
     
-    success: bool = Field(True, description="是否成功")
-    message: Optional[str] = Field(None, description="成功消息")
-    data: Optional[Any] = Field(None, description="响应数据")
+    success: bool = Field(True, description="whethersuccessful")
+    message: Optional[str] = Field(None, description="successfulmessage")
+    data: Optional[Any] = Field(None, description="responsedata")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "success": True,
-                "message": "操作成功",
+                "message": "operation successful",
                 "data": None
             }
         }

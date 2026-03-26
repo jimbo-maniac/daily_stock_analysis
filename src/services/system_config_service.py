@@ -377,7 +377,7 @@ class SystemConfigService:
             )
             warnings.append(
                 (
-                    "新闻窗口已按策略计算："
+                    "newswindowalreadybystrategycalculating："
                     f"NEWS_STRATEGY_PROFILE={profile}, "
                     f"NEWS_MAX_AGE_DAYS={max_age}, "
                     f"effective_days={effective_days} "
@@ -393,15 +393,15 @@ class SystemConfigService:
             if reload_now:
                 warnings.append(
                     (
-                        f"MAX_WORKERS={max_workers} 已保存。任务队列空闲时会自动应用；"
-                        "若当前存在运行中任务，将在队列空闲后生效。"
+                        f"MAX_WORKERS={max_workers} alreadysaving。taskqueueidlewhenwillautomaticapply；"
+                        "ifcurrentexistsrunningtask，willinqueueidleaftertake effect。"
                     )
                 )
             else:
                 warnings.append(
                     (
-                        f"MAX_WORKERS={max_workers} 已写入 .env，但本次未触发运行时重载"
-                        "（reload_now=false）；重载后才会应用。"
+                        f"MAX_WORKERS={max_workers} alreadywriting .env，butthistimesnottriggerrunningwhenoverload"
+                        "（reload_now=false）；overloadafteronly thenwillapply。"
                     )
                 )
 

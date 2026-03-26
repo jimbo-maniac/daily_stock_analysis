@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-交易日历模块 (Issue #373)
+trading calendarmodule (Issue #373)
 ===================================
 
-职责：
-1. 按市场（A股/港股/美股）判断当日是否为交易日
-2. 按市场时区取“今日”日期，避免服务器 UTC 导致日期错误
-3. 支持 per-stock 过滤：只分析当日开市市场的股票
+Responsibilities:
+1. bymarket（A-share/HK stock/US stock）determinetodaywhether istrading day
+2. bymarketwhenzoneget“today”date，avoidservicehandler UTC causedateerror
+3. support per-stock filtering：onlyanalyzingtodayopenmarketmarketstock
 
-依赖：exchange-calendars（可选，不可用时 fail-open）
+dependency：exchange-calendars（optional，unavailablewhen fail-open）
 """
 
 import logging

@@ -36,11 +36,11 @@ class BacktestServiceTestCase(unittest.TestCase):
                 AnalysisHistory(
                     query_id="q1",
                     code="600519",
-                    name="贵州茅台",
+                    name="Kweichow Moutai",
                     report_type="simple",
                     sentiment_score=80,
-                    operation_advice="买入",
-                    trend_prediction="看多",
+                    operation_advice="buy",
+                    trend_prediction="bullish",
                     analysis_summary="test",
                     stop_loss=95.0,
                     take_profit=110.0,
@@ -110,7 +110,7 @@ class BacktestServiceTestCase(unittest.TestCase):
         self.assertEqual(result.eval_status, "completed")
         self.assertEqual(result.code, "600519")
         self.assertEqual(result.analysis_date, date(2024, 1, 1))
-        self.assertEqual(result.operation_advice, "买入")
+        self.assertEqual(result.operation_advice, "buy")
         self.assertEqual(result.position_recommendation, "long")
         self.assertEqual(result.direction_expected, "up")
 
@@ -224,11 +224,11 @@ class BacktestServiceTestCase(unittest.TestCase):
                 AnalysisHistory(
                     query_id="q2",
                     code="000001",
-                    name="平安银行",
+                    name="Ping An Bank",
                     report_type="simple",
                     sentiment_score=30,
-                    operation_advice="卖出",
-                    trend_prediction="看空",
+                    operation_advice="sell",
+                    trend_prediction="bearish",
                     analysis_summary="test2",
                     stop_loss=None,
                     take_profit=None,

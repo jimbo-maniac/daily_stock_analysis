@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-股票分析接口
+stockanalyzingAPI/interface
 ===================================
 
-职责：
-1. 提供 POST /api/v1/analysis/analyze 触发分析接口
-2. 提供 GET /api/v1/analysis/status/{task_id} 查询任务状态接口
-3. 提供 GET /api/v1/analysis/tasks 获取任务列表接口
-4. 提供 GET /api/v1/analysis/tasks/stream SSE 实时推送接口
+Responsibilities:
+1. provide POST /api/v1/analysis/analyze triggeranalyzingAPI/interface
+2. provide GET /api/v1/analysis/status/{task_id} queryingtask statusAPI/interface
+3. provide GET /api/v1/analysis/tasks gettasklistAPI/interface
+4. provide GET /api/v1/analysis/tasks/stream SSE realtimepushAPI/interface
 
-特性：
-- 异步任务队列：分析任务异步执行，不阻塞请求
-- 防重复提交：相同股票代码正在分析时返回 409
-- SSE 实时推送：任务状态变化实时通知前端
+feature：
+- asynchronoustaskqueue：analyzingtaskasynchronousexecute，notblockingrequest
+- preventduplicatesubmit：samestock codecurrentlyanalyzingreturn when 409
+- SSE realtimepush：task statuschangerealtimenotificationfrontend
 """
 
 import asyncio
@@ -75,7 +75,7 @@ def _invalid_analysis_input_error() -> HTTPException:
         status_code=400,
         detail={
             "error": "validation_error",
-            "message": "请输入有效的股票代码或股票名称",
+            "message": "pleaseinputvalidstock codeorstockname",
         },
     )
 
@@ -119,53 +119,53 @@ def _resolve_and_normalize_input(raw_value: str) -> str:
 
 
 # ============================================================
-# POST /analyze - 触发股票分析
+# POST /analyze - triggerstockanalyzing
 # ============================================================
 
 @router.post(
     "/analyze",
     response_model=AnalysisResultResponse,
     responses={
-        200: {"description": "分析完成（同步模式）", "model": AnalysisResultResponse},
+        200: {"description": "analyzingcompleted（synchronizemode）", "model": AnalysisResultResponse},
         202: {
-            "description": "分析任务已接受（异步模式）",
+            "description": "analyzingtaskalreadyaccept（asynchronousmode）",
             "model": Union[TaskAccepted, BatchTaskAcceptedResponse],
         },
-        400: {"description": "请求参数错误", "model": ErrorResponse},
-        409: {"description": "股票正在分析中，拒绝重复提交", "model": DuplicateTaskErrorResponse},
-        500: {"description": "分析失败", "model": ErrorResponse},
+        400: {"description": "requestparametererror", "model": ErrorResponse},
+        409: {"description": "stockcurrentlyanalyzingin，rejectduplicatesubmit", "model": DuplicateTaskErrorResponse},
+        500: {"description": "analyzingfailed", "model": ErrorResponse},
     },
-    summary="触发股票分析",
-    description="启动 AI 智能分析任务，支持同步和异步模式。异步模式下相同股票代码不允许重复提交。"
+    summary="triggerstockanalyzing",
+    description="start AI intelligentanalyzingtask，supportsynchronizeandasynchronousmode。asynchronousmodebelowsamestock codenotallowduplicatesubmit。"
 )
 def trigger_analysis(
         request: AnalyzeRequest,
         config: Config = Depends(get_config_dep)
 ) -> Union[AnalysisResultResponse, JSONResponse]:
     """
-    触发股票分析
+    triggerstockanalyzing
     
-    启动 AI 智能分析任务，支持单只或多只股票批量分析
+    start AI intelligentanalyzingtask，supportsingleormultipleonlystockbatchanalyzing
     
-    流程：
-    1. 校验请求参数
-    2. 异步模式：检查重复 -> 提交任务队列 -> 返回 202
-    3. 同步模式：直接执行分析 -> 返回 200
+    process：
+    1. validaterequestparameter
+    2. asynchronousmode：checkduplicate -> submittaskqueue -> return 202
+    3. synchronizemode：directlyexecuteanalyzing -> return 200
     
     Args:
-        request: 分析请求参数
-        config: 配置依赖
+        request: analyzingrequestparameter
+        config: configurationdependency
         
     Returns:
-        AnalysisResultResponse: 分析结果（同步模式）
-        TaskAccepted | BatchTaskAcceptedResponse: 任务已接受（异步模式，返回 202）
+        AnalysisResultResponse: analysis result（synchronizemode）
+        TaskAccepted | BatchTaskAcceptedResponse: taskalreadyaccept（asynchronousmode，return 202）
         
     Raises:
-        HTTPException: 400 - 请求参数错误
-        HTTPException: 409 - 股票正在分析中
-        HTTPException: 500 - 分析失败
+        HTTPException: 400 - requestparametererror
+        HTTPException: 409 - stockcurrentlyanalyzingin
+        HTTPException: 500 - analyzingfailed
     """
-    # 校验请求参数
+    # validaterequestparameter
     stock_codes = []
     if request.stock_code:
         stock_codes.append(request.stock_code)
@@ -177,7 +177,7 @@ def trigger_analysis(
             status_code=400,
             detail={
                 "error": "validation_error",
-                "message": "必须提供 stock_code 或 stock_codes 参数"
+                "message": "mustprovide stock_code or stock_codes parameter"
             }
         )
 
@@ -204,7 +204,7 @@ def trigger_analysis(
             status_code=400,
             detail={
                 "error": "validation_error",
-                "message": f"单次分析请求最多支持 {MAX_BATCH_SIZE} 只股票"
+                "message": f"singleanalyzingrequestat mostsupport {MAX_BATCH_SIZE} onlystock"
             }
         )
 
@@ -213,7 +213,7 @@ def trigger_analysis(
             status_code=400,
             detail={
                 "error": "validation_error",
-                "message": "股票代码不能为空或仅包含空白字符"
+                "message": "stock codecannotis emptyor onlypackageincluding whitespace"
             }
         )
 
@@ -224,7 +224,7 @@ def trigger_analysis(
                 status_code=400,
                 detail={
                     "error": "validation_error",
-                    "message": "同步模式仅支持单只股票分析，请使用 async_mode=true 进行批量分析"
+                    "message": "synchronizemodeonly supportsinglestockanalyzing，please use async_mode=true proceedbatchanalyzing"
                 }
             )
         return _handle_sync_analysis(stock_codes[0], request)
@@ -266,7 +266,7 @@ def _handle_async_analysis_batch(
             task_id=task.task_id,
             stock_code=task.stock_code,
             status="pending",
-            message=f"分析任务已加入队列: {task.stock_code}",
+            message=f"analyzingtaskaddedqueue: {task.stock_code}",
         )
         for task in accepted_tasks
     ]
@@ -279,7 +279,7 @@ def _handle_async_analysis_batch(
         for dup in duplicate_errors
     ]
     
-    # 单只股票且被拒绝：保持 409 兼容性
+    # singlestockandbyreject：maintain 409 compatible-ness
     if len(stock_codes) == 1 and duplicates:
         dup = duplicates[0]
         error_response = DuplicateTaskErrorResponse(
@@ -293,7 +293,7 @@ def _handle_async_analysis_batch(
             content=error_response.model_dump()
         )
     
-    # 单只股票成功：保持原有响应格式兼容性
+    # singlestocksuccessful：maintainoriginalhasresponseformatcompatible-ness
     if len(stock_codes) == 1 and accepted:
         task_accepted = TaskAccepted(
             task_id=accepted[0].task_id,
@@ -305,11 +305,11 @@ def _handle_async_analysis_batch(
             content=task_accepted.model_dump()
         )
     
-    # 批量：返回汇总结果
+    # batch：returnsummaryresult
     batch_response = BatchTaskAcceptedResponse(
         accepted=accepted,
         duplicates=duplicates,
-        message=f"已提交 {len(accepted)} 个任务，{len(duplicates)} 个重复跳过",
+        message=f"alreadysubmit {len(accepted)} counttask，{len(duplicates)} countduplicateskip",
     )
     return JSONResponse(
         status_code=202,
@@ -322,9 +322,9 @@ def _handle_sync_analysis(
     request: AnalyzeRequest
 ) -> AnalysisResultResponse:
     """
-    处理同步分析请求
+    processingsynchronizeanalyzingrequest
     
-    直接执行分析，等待完成后返回结果
+    directlyexecuteanalyzing，waitingcompletedafterreturnresult
     """
     import uuid
     from src.services.analysis_service import AnalysisService
@@ -345,11 +345,11 @@ def _handle_sync_analysis(
                 status_code=500,
                 detail={
                     "error": "analysis_failed",
-                    "message": f"分析股票 {stock_code} 失败"
+                    "message": f"analyzingstock {stock_code} failed"
                 }
             )
 
-        # 构建报告结构
+        # buildreport structure
         report_data = result.get("report", {})
         context_snapshot, fundamental_snapshot = _load_sync_fundamental_sources(
             query_id=query_id,
@@ -375,60 +375,60 @@ def _handle_sync_analysis(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"分析失败: {e}", exc_info=True)
+        logger.error(f"analyzingfailed: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "internal_error",
-                "message": f"分析过程发生错误: {str(e)}"
+                "message": f"analyzingprocesssendgenerateerror: {str(e)}"
             }
         )
 
 
 # ============================================================
-# GET /tasks - 获取任务列表
+# GET /tasks - gettasklist
 # ============================================================
 
 @router.get(
     "/tasks",
     response_model=TaskListResponse,
     responses={
-        200: {"description": "任务列表"},
+        200: {"description": "tasklist"},
     },
-    summary="获取分析任务列表",
-    description="获取当前所有分析任务，可按状态筛选"
+    summary="getanalyzingtasklist",
+    description="getcurrentallanalyzingtask，canbystatusfilter"
 )
 def get_task_list(
     status: Optional[str] = Query(
         None,
-        description="筛选状态：pending, processing, completed, failed（支持逗号分隔多个）"
+        description="filterstatus：pending, processing, completed, failed（supportcomma-separatedmultiplecount）"
     ),
-    limit: int = Query(20, description="返回数量限制", ge=1, le=100),
+    limit: int = Query(20, description="return countconstraint", ge=1, le=100),
 ) -> TaskListResponse:
     """
-    获取分析任务列表
+    getanalyzingtasklist
     
     Args:
-        status: 状态筛选（可选）
-        limit: 返回数量限制
+        status: statusfilter（optional）
+        limit: return countconstraint
         
     Returns:
-        TaskListResponse: 任务列表响应
+        TaskListResponse: tasklistresponse
     """
     task_queue = get_task_queue()
     
-    # 获取所有任务
+    # get alltask
     all_tasks = task_queue.list_all_tasks(limit=limit)
     
-    # 状态筛选
+    # statusfilter
     if status:
         status_list = [s.strip().lower() for s in status.split(",")]
         all_tasks = [t for t in all_tasks if t.status.value in status_list]
     
-    # 统计信息
+    # statistics
     stats = task_queue.get_task_stats()
     
-    # 转换为 Schema
+    # convertingas Schema
     task_infos = [
         TaskInfo(
             task_id=t.task_id,
@@ -457,60 +457,60 @@ def get_task_list(
 
 
 # ============================================================
-# GET /tasks/stream - SSE 实时推送
+# GET /tasks/stream - SSE realtimepush
 # ============================================================
 
 @router.get(
     "/tasks/stream",
     responses={
-        200: {"description": "SSE 事件流", "content": {"text/event-stream": {}}},
+        200: {"description": "SSE eventstream", "content": {"text/event-stream": {}}},
     },
-    summary="任务状态 SSE 流",
-    description="通过 Server-Sent Events 实时推送任务状态变化"
+    summary="task status SSE stream",
+    description="via Server-Sent Events realtimepushtask statuschange"
 )
 async def task_stream():
     """
-    SSE 任务状态流
+    SSE task statusstream
     
-    事件类型：
-    - connected: 连接成功
-    - task_created: 新任务创建
-    - task_started: 任务开始执行
-    - task_completed: 任务完成
-    - task_failed: 任务失败
-    - heartbeat: 心跳（每 30 秒）
+    eventtype：
+    - connected: connectingsuccessful
+    - task_created: newtaskcreating
+    - task_started: taskstartingexecute
+    - task_completed: taskcompleted
+    - task_failed: taskfailed
+    - heartbeat: heartbeat（each 30 seconds）
     
     Returns:
-        StreamingResponse: SSE 事件流
+        StreamingResponse: SSE eventstream
     """
     async def event_generator():
         task_queue = get_task_queue()
         event_queue: asyncio.Queue = asyncio.Queue()
         
-        # 发送连接成功事件
+        # sendingconnectingsuccessfulevent
         yield _format_sse_event("connected", {"message": "Connected to task stream"})
         
-        # 发送当前进行中的任务
+        # sendingcurrentin progresstask
         pending_tasks = task_queue.list_pending_tasks()
         for task in pending_tasks:
             yield _format_sse_event("task_created", task.to_dict())
         
-        # 订阅任务事件
+        # subscribetaskevent
         task_queue.subscribe(event_queue)
         
         try:
             while True:
                 try:
-                    # 等待事件，超时发送心跳
+                    # waitingevent，timeoutsendingheartbeat
                     event = await asyncio.wait_for(event_queue.get(), timeout=30)
                     yield _format_sse_event(event["type"], event["data"])
                 except asyncio.TimeoutError:
-                    # 心跳
+                    # heartbeat
                     yield _format_sse_event("heartbeat", {
                         "timestamp": datetime.now().isoformat()
                     })
         except asyncio.CancelledError:
-            # 客户端断开连接
+            # clientdisconnectingconnecting
             pass
         finally:
             task_queue.unsubscribe(event_queue)
@@ -521,55 +521,55 @@ async def task_stream():
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # 禁用 Nginx 缓冲
+            "X-Accel-Buffering": "no",  # disabled Nginx buffer
         }
     )
 
 
 def _format_sse_event(event_type: str, data: Dict[str, Any]) -> str:
     """
-    格式化 SSE 事件
+    formatting SSE event
     
     Args:
-        event_type: 事件类型
-        data: 事件数据
+        event_type: eventtype
+        data: eventdata
         
     Returns:
-        SSE 格式字符串
+        SSE formatstring
     """
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 # ============================================================
-# GET /status/{task_id} - 查询单个任务状态
+# GET /status/{task_id} - queryingsingletask status
 # ============================================================
 
 @router.get(
     "/status/{task_id}",
     response_model=TaskStatus,
     responses={
-        200: {"description": "任务状态"},
-        404: {"description": "任务不存在", "model": ErrorResponse},
+        200: {"description": "task status"},
+        404: {"description": "tasknot found", "model": ErrorResponse},
     },
-    summary="查询分析任务状态",
-    description="根据 task_id 查询单个任务的状态"
+    summary="queryinganalyzingtask status",
+    description="based on task_id queryingsingletaskstatus"
 )
 def get_analysis_status(task_id: str) -> TaskStatus:
     """
-    查询分析任务状态
+    queryinganalyzingtask status
     
-    优先从任务队列查询，如果不存在则从数据库查询历史记录
+    priorityfromtaskqueuequerying，ifnot foundthenfromdatabasequeryinghistoricalrecord
     
     Args:
-        task_id: 任务 ID
+        task_id: task ID
         
     Returns:
-        TaskStatus: 任务状态信息
+        TaskStatus: task statusinfo
         
     Raises:
-        HTTPException: 404 - 任务不存在
+        HTTPException: 404 - tasknot found
     """
-    # 1. 先从任务队列查询
+    # 1. firstfromtaskqueuequerying
     task_queue = get_task_queue()
     task = task_queue.get_task(task_id)
     
@@ -585,7 +585,7 @@ def get_analysis_status(task_id: str) -> TaskStatus:
             selection_source=task.selection_source,
         )
     
-    # 2. 从数据库查询已完成的记录
+    # 2. fromdatabasequeryingcompletedrecord
     try:
         from src.storage import DatabaseManager
         db = DatabaseManager.get_instance()
@@ -641,27 +641,27 @@ def get_analysis_status(task_id: str) -> TaskStatus:
             )
 
     except Exception as e:
-        logger.error(f"查询任务状态失败: {e}", exc_info=True)
+        logger.error(f"queryingtask statusfailed: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "internal_error",
-                "message": f"查询任务状态失败: {str(e)}"
+                "message": f"queryingtask statusfailed: {str(e)}"
             }
         )
 
-    # 3. 任务不存在
+    # 3. tasknot found
     raise HTTPException(
         status_code=404,
         detail={
             "error": "not_found",
-            "message": f"任务 {task_id} 不存在或已过期"
+            "message": f"task {task_id} not foundorexpired"
         }
     )
 
 
 # ============================================================
-# 辅助函数
+# helper function
 # ============================================================
 
 def _load_sync_fundamental_sources(
@@ -704,18 +704,18 @@ def _build_analysis_report(
         fallback_fundamental_payload: Optional[Dict[str, Any]] = None,
 ) -> AnalysisReport:
     """
-    构建符合 API 规范的分析报告
+    buildsymbolcombine API standardanalysis report
     
     Args:
-        report_data: 原始报告数据
-        query_id: 查询 ID
-        stock_code: 股票代码
-        stock_name: 股票名称
-        context_snapshot: 上下文快照（可选）
-        fallback_fundamental_payload: 基本面快照 payload（可选）
+        report_data: rawreportdata
+        query_id: querying ID
+        stock_code: stock code
+        stock_name: stockname
+        context_snapshot: contextsnapshot（optional）
+        fallback_fundamental_payload: fundamental snapshot payload（optional）
         
     Returns:
-        AnalysisReport: 结构化的分析报告
+        AnalysisReport: structure-izeanalysis report
     """
     meta_data = report_data.get("meta", {})
     summary_data = report_data.get("summary", {})

@@ -67,7 +67,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
             news_max_age_days=3,
             news_strategy_profile="medium",  # 7
         )
-        service.search_stock_news("600519", "贵州茅台", max_results=5)
+        service.search_stock_news("600519", "Kweichow Moutai", max_results=5)
         kwargs = mock_search.call_args[1]
         self.assertEqual(kwargs["days"], 3)
 
@@ -77,7 +77,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
             news_max_age_days=30,
             news_strategy_profile="invalid_profile",
         )
-        service.search_stock_news("600519", "贵州茅台", max_results=5)
+        service.search_stock_news("600519", "Kweichow Moutai", max_results=5)
         kwargs = mock_search.call_args[1]
         self.assertEqual(kwargs["days"], 3)
 
@@ -103,7 +103,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
             ),
         )
 
-        resp = service.search_stock_news("600519", "贵州茅台", max_results=5)
+        resp = service.search_stock_news("600519", "Kweichow Moutai", max_results=5)
         titles = [r.title for r in resp.results]
         self.assertEqual(titles, ["future_1", "fresh"])
         for item in resp.results:
@@ -115,7 +115,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
             news_max_age_days=3,
             news_strategy_profile="short",
         )
-        service.search_stock_news("600519", "贵州茅台", max_results=4)
+        service.search_stock_news("600519", "Kweichow Moutai", max_results=4)
         args, kwargs = mock_search.call_args
         requested = kwargs.get("max_results")
         if requested is None:
@@ -147,7 +147,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
         )
         service._providers = [p1, p2]
 
-        resp = service.search_stock_news("600519", "贵州茅台", max_results=3)
+        resp = service.search_stock_news("600519", "Kweichow Moutai", max_results=3)
         self.assertEqual([r.title for r in resp.results], ["fresh"])
         p1.search.assert_called_once()
         p2.search.assert_called_once()
@@ -172,7 +172,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
         with patch("src.search_service.time.sleep"):
             intel = service.search_comprehensive_intel(
                 stock_code="600519",
-                stock_name="贵州茅台",
+                stock_name="Kweichow Moutai",
                 max_searches=2,
             )
 
@@ -209,7 +209,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
         with patch("src.search_service.time.sleep"):
             intel = service.search_comprehensive_intel(
                 stock_code="510300",
-                stock_name="沪深300ETF",
+                stock_name="Shanghai-Shenzhen300ETF",
                 max_searches=3,
             )
 
@@ -238,7 +238,7 @@ class SearchNewsFreshnessTestCase(unittest.TestCase):
         with patch("src.search_service.time.sleep"):
             intel = service.search_comprehensive_intel(
                 stock_code="600519",
-                stock_name="贵州茅台",
+                stock_name="Kweichow Moutai",
                 max_searches=3,
             )
 

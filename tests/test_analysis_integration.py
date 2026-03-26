@@ -56,9 +56,9 @@ class TestAnalysisIntegration:
         response = client.post(
             "/api/v1/analysis/analyze",
             json={
-                "stock_code": "贵州茅台",
+                "stock_code": "Kweichow Moutai",
                 "async_mode": True,
-                "original_query": "贵州茅台",
+                "original_query": "Kweichow Moutai",
                 "selection_source": "manual"
             }
         )
@@ -72,7 +72,7 @@ class TestAnalysisIntegration:
         mock_task_queue.submit_tasks_batch.assert_called_once_with(
             stock_codes=["600519"],
             stock_name=None,
-            original_query="贵州茅台",
+            original_query="Kweichow Moutai",
             selection_source="manual",
             report_type="detailed",
             force_refresh=False
@@ -108,7 +108,7 @@ class TestAnalysisIntegration:
         )
 
         assert response.status_code == 400
-        assert "最多支持" in response.json()["message"]
+        assert "at mostsupport" in response.json()["message"]
 
     def test_trigger_analysis_metadata_isolation_in_batch(self, client, mock_task_queue):
         """Test that single-stock metadata isn't applied to batch tasks."""
@@ -118,8 +118,8 @@ class TestAnalysisIntegration:
             "/api/v1/analysis/analyze",
             json={
                 "stock_codes": ["600519", "000001"],
-                "stock_name": "贵州茅台",
-                "original_query": "茅台",
+                "stock_name": "Kweichow Moutai",
+                "original_query": "Maotai",
                 "async_mode": True
             }
         )

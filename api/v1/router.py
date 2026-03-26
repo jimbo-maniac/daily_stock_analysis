@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-API v1 路由聚合
+API v1 routeaggregation
 ===================================
 
-职责：
-1. 聚合 v1 版本的所有 endpoint 路由
-2. 统一添加 /api/v1 前缀
+Responsibilities:
+1. aggregation v1 versionall endpoint route
+2. unifiedadd /api/v1 prefix
 """
 
 from fastapi import APIRouter
 
 from api.v1.endpoints import analysis, auth, history, stocks, backtest, system_config, agent, usage, portfolio
 
-# 创建 v1 版本主路由
+# creating v1 versionmainroute
 router = APIRouter(prefix="/api/v1")
 
 router.include_router(

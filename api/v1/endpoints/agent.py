@@ -18,22 +18,22 @@ from src.services.agent_model_service import list_agent_model_deployments
 
 # Tool name -> Chinese display name mapping
 TOOL_DISPLAY_NAMES: Dict[str, str] = {
-    "get_realtime_quote":         "获取实时行情",
-    "get_daily_history":          "获取历史K线",
-    "get_chip_distribution":      "分析筹码分布",
-    "get_analysis_context":       "获取分析上下文",
-    "get_stock_info":             "获取股票基本面",
-    "search_stock_news":          "搜索股票新闻",
-    "search_comprehensive_intel": "搜索综合情报",
-    "analyze_trend":              "分析技术趋势",
-    "calculate_ma":               "计算均线系统",
-    "get_volume_analysis":        "分析量能变化",
-    "analyze_pattern":            "识别K线形态",
-    "get_market_indices":         "获取市场指数",
-    "get_sector_rankings":        "分析行业板块",
-    "get_skill_backtest_summary": "获取技能回测概览",
-    "get_strategy_backtest_summary": "获取策略回测概览",
-    "get_stock_backtest_summary": "获取个股回测数据",
+    "get_realtime_quote":         "get realtimequote/market data",
+    "get_daily_history":          "get historicalcandlestick",
+    "get_chip_distribution":      "analyzingchip distribution",
+    "get_analysis_context":       "getanalyzingcontext",
+    "get_stock_info":             "getstockfundamentals",
+    "search_stock_news":          "searchstocknews",
+    "search_comprehensive_intel": "searchcompositeintelligence",
+    "analyze_trend":              "analyzingtechnicaltrend",
+    "calculate_ma":               "calculatingmoving averagesystem",
+    "get_volume_analysis":        "analyzingvolumechange",
+    "analyze_pattern":            "identifycandlestickpattern",
+    "get_market_indices":         "getmarketindex",
+    "get_sector_rankings":        "analyzingindustrysector",
+    "get_skill_backtest_summary": "getskillbacktestoverview",
+    "get_strategy_backtest_summary": "getstrategybacktestoverview",
+    "get_stock_backtest_summary": "getindividual stockbacktestdata",
 }
 
 logger = logging.getLogger(__name__)
@@ -206,7 +206,7 @@ class SessionMessagesResponse(BaseModel):
 
 @router.get("/chat/sessions", response_model=SessionsResponse)
 async def list_chat_sessions(limit: int = 50, user_id: Optional[str] = None):
-    """获取聊天会话列表
+    """getchatdayssessionlist
 
     Args:
         limit: Maximum number of sessions to return.
@@ -227,7 +227,7 @@ async def list_chat_sessions(limit: int = 50, user_id: Optional[str] = None):
 
 @router.get("/chat/sessions/{session_id}", response_model=SessionMessagesResponse)
 async def get_chat_session_messages(session_id: str, limit: int = 100):
-    """获取单个会话的完整消息"""
+    """getsinglesessioncompletemessage"""
     from src.storage import get_db
     messages = get_db().get_conversation_messages(session_id, limit=limit)
     return SessionMessagesResponse(session_id=session_id, messages=messages)
@@ -235,7 +235,7 @@ async def get_chat_session_messages(session_id: str, limit: int = 100):
 
 @router.delete("/chat/sessions/{session_id}")
 async def delete_chat_session(session_id: str):
-    """删除指定会话"""
+    """deletingspecifiedsession"""
     from src.storage import get_db
     count = get_db().delete_conversation_session(session_id)
     return {"deleted": count}
@@ -265,7 +265,7 @@ async def send_chat_to_notification(request: SendChatRequest):
         return {
             "success": False,
             "error": "no_channels",
-            "message": "未配置通知渠道，请先在设置中配置",
+            "message": "notconfigurationnotification channel，pleasefirstinsettingsinconfiguration",
         }
     return {"success": True}
 
@@ -345,7 +345,7 @@ async def agent_chat_stream(request: ChatRequest):
                 try:
                     event = await asyncio.wait_for(queue.get(), timeout=300.0)
                 except asyncio.TimeoutError:
-                    yield "data: " + json.dumps({"type": "error", "message": "分析超时"}, ensure_ascii=False) + "\n\n"
+                    yield "data: " + json.dumps({"type": "error", "message": "analyzingtimeout"}, ensure_ascii=False) + "\n\n"
                     break
                 yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
                 if event.get("type") in ("done", "error"):

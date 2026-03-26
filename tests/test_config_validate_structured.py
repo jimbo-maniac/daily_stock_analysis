@@ -140,7 +140,7 @@ class TestValidateStructuredLLM:
         """LLM_CHANNELS populated via llm_model_list must NOT trigger an error.
 
         This is the primary regression guard: a user who only configures
-        LLM_CHANNELS (no legacy *_API_KEY) should not see 'AI 功能不可用'.
+        LLM_CHANNELS (no legacy *_API_KEY) should not see 'AI featureunavailable'.
         """
         channel_model_list = [
             {"model_name": "openai/gpt-4o-mini", "litellm_params": {"api_key": "sk-chan", "api_base": "https://aihubmix.com/v1"}},
@@ -273,19 +273,19 @@ class TestValidateStructuredNotification:
         cfg = _make_config(wechat_webhook_url=None)
         issues = cfg.validate_structured()
         warn = [i for i in issues if i.severity == "warning"]
-        assert any("通知渠道" in i.message for i in warn)
+        assert any("notification channel" in i.message for i in warn)
 
     def test_notification_configured_no_warning(self):
         cfg = _make_config(wechat_webhook_url="https://example.com/wh")
         issues = cfg.validate_structured()
-        assert not any(i.severity == "warning" and "通知渠道" in i.message for i in issues)
+        assert not any(i.severity == "warning" and "notification channel" in i.message for i in issues)
 
     def test_no_search_engine_is_info(self):
         cfg = _make_config(searxng_public_instances_enabled=False)
         issues = cfg.validate_structured()
         info = [i for i in issues if i.severity == "info"]
-        assert any("搜索引擎" in i.message for i in info)
-        search_issue = next(i for i in info if "搜索引擎" in i.message)
+        assert any("searchengine" in i.message for i in info)
+        search_issue = next(i for i in info if "searchengine" in i.message)
         assert search_issue.field == "BOCHA_API_KEYS"
 
     def test_searxng_configured_no_search_info(self):
@@ -293,14 +293,14 @@ class TestValidateStructuredNotification:
         cfg = _make_config(searxng_base_urls=["https://searx.example.org"])
         issues = cfg.validate_structured()
         info = [i for i in issues if i.severity == "info"]
-        assert not any("搜索引擎" in i.message and "未配置" in i.message for i in info)
+        assert not any("searchengine" in i.message and "notconfiguration" in i.message for i in info)
 
     def test_public_searxng_enabled_no_search_info(self):
         """Public SearXNG mode also counts as search capability."""
         cfg = _make_config(searxng_public_instances_enabled=True)
         issues = cfg.validate_structured()
         info = [i for i in issues if i.severity == "info"]
-        assert not any("搜索引擎" in i.message and "未配置" in i.message for i in info)
+        assert not any("searchengine" in i.message and "notconfiguration" in i.message for i in info)
 
 
 # ---------------------------------------------------------------------------

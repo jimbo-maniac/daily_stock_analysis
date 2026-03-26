@@ -26,16 +26,16 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity passes when all mandatory fields are present."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
-            analysis_summary="稳健",
+            operation_advice="hold",
+            analysis_summary="steady",
             decision_type="hold",
             dashboard={
-                "core_conclusion": {"one_sentence": "持有观望"},
+                "core_conclusion": {"one_sentence": "hold and observe"},
                 "intelligence": {"risk_alerts": []},
-                "battle_plan": {"sniper_points": {"stop_loss": "110元"}},
+                "battle_plan": {"sniper_points": {"stop_loss": "110yuan"}},
             },
         )
         ok, missing = check_content_integrity(result)
@@ -46,14 +46,14 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity fails when analysis_summary is empty."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
+            operation_advice="hold",
             analysis_summary="",
             decision_type="hold",
             dashboard={
-                "core_conclusion": {"one_sentence": "持有"},
+                "core_conclusion": {"one_sentence": "hold"},
                 "intelligence": {"risk_alerts": []},
                 "battle_plan": {"sniper_points": {"stop_loss": "110"}},
             },
@@ -66,11 +66,11 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity fails when core_conclusion.one_sentence is missing."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
-            analysis_summary="稳健",
+            operation_advice="hold",
+            analysis_summary="steady",
             decision_type="hold",
             dashboard={
                 "core_conclusion": {},
@@ -86,14 +86,14 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity fails when stop_loss missing and decision_type is buy."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="买入",
-            analysis_summary="稳健",
+            operation_advice="buy",
+            analysis_summary="steady",
             decision_type="buy",
             dashboard={
-                "core_conclusion": {"one_sentence": "可买入"},
+                "core_conclusion": {"one_sentence": "canbuy"},
                 "intelligence": {"risk_alerts": []},
                 "battle_plan": {"sniper_points": {}},
             },
@@ -106,14 +106,14 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity passes when stop_loss missing and decision_type is sell."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看空",
+            name="Kweichow Moutai",
+            trend_prediction="bearish",
             sentiment_score=35,
-            operation_advice="卖出",
-            analysis_summary="弱势",
+            operation_advice="sell",
+            analysis_summary="weak",
             decision_type="sell",
             dashboard={
-                "core_conclusion": {"one_sentence": "建议卖出"},
+                "core_conclusion": {"one_sentence": "recommendedsell"},
                 "intelligence": {"risk_alerts": []},
                 "battle_plan": {"sniper_points": {}},
             },
@@ -126,14 +126,14 @@ class TestCheckContentIntegrity(unittest.TestCase):
         """Integrity fails when intelligence.risk_alerts field is missing."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
-            analysis_summary="稳健",
+            operation_advice="hold",
+            analysis_summary="steady",
             decision_type="hold",
             dashboard={
-                "core_conclusion": {"one_sentence": "持有"},
+                "core_conclusion": {"one_sentence": "hold"},
                 "intelligence": {},
                 "battle_plan": {"sniper_points": {"stop_loss": "110"}},
             },
@@ -150,44 +150,44 @@ class TestApplyPlaceholderFill(unittest.TestCase):
         """Placeholder fills analysis_summary when missing."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
+            operation_advice="hold",
             analysis_summary="",
             decision_type="hold",
             dashboard={},
         )
         apply_placeholder_fill(result, ["analysis_summary"])
-        self.assertEqual(result.analysis_summary, "待补充")
+        self.assertEqual(result.analysis_summary, "to be filled")
 
     def test_fills_missing_stop_loss(self) -> None:
         """Placeholder fills stop_loss when missing."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="买入",
-            analysis_summary="稳健",
+            operation_advice="buy",
+            analysis_summary="steady",
             decision_type="buy",
             dashboard={"battle_plan": {"sniper_points": {}}},
         )
         apply_placeholder_fill(result, ["dashboard.battle_plan.sniper_points.stop_loss"])
         self.assertEqual(
             result.dashboard["battle_plan"]["sniper_points"]["stop_loss"],
-            "待补充",
+            "to be filled",
         )
 
     def test_fills_risk_alerts_empty_list(self) -> None:
         """Placeholder fills risk_alerts with empty list when missing."""
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
-            trend_prediction="看多",
+            name="Kweichow Moutai",
+            trend_prediction="bullish",
             sentiment_score=70,
-            operation_advice="持有",
-            analysis_summary="稳健",
+            operation_advice="hold",
+            analysis_summary="steady",
             decision_type="hold",
             dashboard={"intelligence": {}},
         )
@@ -199,14 +199,14 @@ class TestIntegrityRetryPrompt(unittest.TestCase):
     """Retry prompt construction tests."""
 
     def test_retry_prompt_includes_previous_response(self) -> None:
-        """Retry prompt should carry previous response so补全是增量的。"""
+        """Retry prompt should carry previous response socompleteisincreasevolume。"""
         with patch.object(GeminiAnalyzer, "_init_litellm", return_value=None):
             analyzer = GeminiAnalyzer()
         prompt = analyzer._build_integrity_retry_prompt(
-            "原始提示",
-            '{"analysis_summary": "已有内容"}',
+            "rawTip",
+            '{"analysis_summary": "existingcontent"}',
             ["dashboard.core_conclusion.one_sentence"],
         )
-        self.assertIn("原始提示", prompt)
-        self.assertIn('{"analysis_summary": "已有内容"}', prompt)
+        self.assertIn("rawTip", prompt)
+        self.assertIn('{"analysis_summary": "existingcontent"}', prompt)
         self.assertIn("dashboard.core_conclusion.one_sentence", prompt)

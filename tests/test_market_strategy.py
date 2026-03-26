@@ -14,9 +14,9 @@ class TestMarketStrategyBlueprint(unittest.TestCase):
         blueprint = get_market_strategy_blueprint("cn")
         block = blueprint.to_prompt_block()
 
-        self.assertIn("A股市场三段式复盘策略", block)
+        self.assertIn("A-sharemarket three-stage review strategy", block)
         self.assertIn("Action Framework", block)
-        self.assertIn("进攻", block)
+        self.assertIn("offensive", block)
 
     def test_us_blueprint_contains_regime_strategy(self):
         blueprint = get_market_strategy_blueprint("us")
@@ -34,8 +34,8 @@ class TestMarketAnalyzerStrategyPrompt(unittest.TestCase):
         analyzer = MarketAnalyzer(region="cn")
         prompt = analyzer._build_review_prompt(MarketOverview(date="2026-02-24"), [])
 
-        self.assertIn("策略计划", prompt)
-        self.assertIn("A股市场三段式复盘策略", prompt)
+        self.assertIn("strategyplan", prompt)
+        self.assertIn("A-sharemarket three-stage review strategy", prompt)
 
     def test_us_prompt_contains_strategy_plan_section(self):
         analyzer = MarketAnalyzer(region="us")

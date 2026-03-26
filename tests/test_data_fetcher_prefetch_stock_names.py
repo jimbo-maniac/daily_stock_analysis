@@ -19,7 +19,7 @@ class _DummyFetcher:
 
     @staticmethod
     def get_stock_name(_stock_code):
-        return "测试股票"
+        return "testingstock"
 
 
 class TestPrefetchStockNames(unittest.TestCase):
@@ -39,36 +39,36 @@ class TestPrefetchStockNames(unittest.TestCase):
     def test_get_stock_name_skips_realtime_when_allow_realtime_false(self):
         manager = DataFetcherManager.__new__(DataFetcherManager)
         manager._fetchers = [_DummyFetcher()]
-        manager.get_realtime_quote = MagicMock(return_value=MagicMock(name="实时名称"))
+        manager.get_realtime_quote = MagicMock(return_value=MagicMock(name="realtimename"))
 
         name = DataFetcherManager.get_stock_name(manager, "123456", allow_realtime=False)
 
-        self.assertEqual(name, "测试股票")
+        self.assertEqual(name, "testingstock")
         manager.get_realtime_quote.assert_not_called()
 
     def test_get_stock_name_prefers_static_mapping_before_remote_fetchers(self):
         manager = DataFetcherManager.__new__(DataFetcherManager)
         remote_fetcher = MagicMock()
         remote_fetcher.name = "RemoteFetcher"
-        remote_fetcher.get_stock_name.return_value = "远程名称"
+        remote_fetcher.get_stock_name.return_value = "remoteprocessname"
         manager._fetchers = [remote_fetcher]
         manager.get_realtime_quote = MagicMock()
 
         name = DataFetcherManager.get_stock_name(manager, "600519", allow_realtime=False)
 
-        self.assertEqual(name, "贵州茅台")
+        self.assertEqual(name, "Kweichow Moutai")
         manager.get_realtime_quote.assert_not_called()
         remote_fetcher.get_stock_name.assert_not_called()
-        self.assertEqual(manager._stock_name_cache["600519"], "贵州茅台")
+        self.assertEqual(manager._stock_name_cache["600519"], "Kweichow Moutai")
 
     def test_pytdx_get_stock_name_reads_all_security_list_pages(self):
         fetcher = PytdxFetcher(hosts=[])
 
         first_page = [
-            {"code": f"{index:06d}", "name": f"股票{index:06d}"}
+            {"code": f"{index:06d}", "name": f"stock{index:06d}"}
             for index in range(1000)
         ]
-        second_page = [{"code": "300750", "name": "宁德时代"}]
+        second_page = [{"code": "300750", "name": "CATL"}]
 
         api = MagicMock()
 
@@ -89,9 +89,9 @@ class TestPrefetchStockNames(unittest.TestCase):
         with patch.object(fetcher, "_pytdx_session", return_value=session):
             name = fetcher.get_stock_name("300750")
 
-        self.assertEqual(name, "宁德时代")
-        self.assertEqual(fetcher._stock_name_cache["300750"], "宁德时代")
-        self.assertEqual(fetcher._stock_list_cache["300750"], "宁德时代")
+        self.assertEqual(name, "CATL")
+        self.assertEqual(fetcher._stock_name_cache["300750"], "CATL")
+        self.assertEqual(fetcher._stock_list_cache["300750"], "CATL")
         api.get_finance_info.assert_not_called()
 
 

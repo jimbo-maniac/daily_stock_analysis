@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-A股自选股智能分析系统 - 通知服务单元测试
+A-share Stock Intelligent Analysis System - notificationserviceunittesting
 ===================================
 
-职责：
-1. 验证通知服务的配置检测逻辑
-2. 验证通知服务的渠道检测逻辑
-3. 验证通知服务的消息发送逻辑
+Responsibilities:
+1. verificationnotificationserviceconfigurationdetectlogic
+2. verificationnotificationservicechanneldetectlogic
+3. verificationnotificationservicemessagesendinglogic
 
 TODO: 
-1. 添加发送渠道以外的测试，如：
-    - 生成日报
-2. 添加 send_to_context 的测试
+1. addsending channelwithoutsidetesting，e.g.：
+    - generatingdaily report
+2. add send_to_context testing
 """
 import os
 import sys
@@ -49,31 +49,31 @@ def _make_response(status_code: int, json: Optional[dict] = None) -> requests.Re
 
 
 class TestNotificationServiceSendToMethods(unittest.TestCase):
-    """测试通知发送服务
+    """testingnotificationsendingservice
 
-    测试设计：
+    testingdesign：
 
-    测试按照渠道的字母顺序排列，在合适位置添加新的测试方法。
-    如果采用长消息分批发送，必须单独测试分批发送的逻辑，
+    testingaccording tochannelcharacterparentorderarrange，incombinesuitabledigitsetaddnewtestingmethod。
+    ifcollectuselongmessagein batchessending，mustseparatetestingin batchessendinglogic，
         e.g. test_send_to_discord_via_notification_service_with_bot_requires_chunking
 
-    1. 添加模拟配置：
-    使用 mock.patch 装饰器来模拟 get_config 函数，
-    使用 _make_config 函数添加配置，并返回 Config 实例。
+    1. addmockconfiguration：
+    use mock.patch decoratorfrommock get_config function，
+    use _make_config functionaddconfiguration，andreturn Config instance。
 
-    2. 检查配置是否正确：
-    使用 assertIn 检查 NotificationChannel.xxxx 是否在
-    `NotificationService.get_available_channels()` 返回值中。
+    2. checkconfigurationwhethercorrect：
+    use assertIn check NotificationChannel.xxxx whether in
+    `NotificationService.get_available_channels()` return valuein。
 
-    3. 模拟请求响应：
-    使用 mock.patch 装饰器来模拟 requests.post 函数，
-    使用 _make_response 函数模拟请求响应，并返回 Response 实例。
-    若使用其他函数模拟请求响应，则使用 mock.patch 装饰器来模拟该函数。
+    3. mockrequestresponse：
+    use mock.patch decoratorfrommock requests.post function，
+    use _make_response functionmockrequestresponse，andreturn Response instance。
+    ifuseotherfunctionmockrequestresponse，thenuse mock.patch decoratorfrommockthisfunction。
 
-    4. 使用 assertTrue 检查 send 的返回值。
+    4. use assertTrue check send return value。
 
-    5. 使用 assert_called_once 检查请求函数是否被调用一次。
-    测试分批发送时，使用 assertAlmostEqual(mock_post.call_count, ...) 检查请求函数被调用次数
+    5. use assert_called_once checkrequestfunctionwhetherbycallonce。
+    testingin batchessendingwhen，use assertAlmostEqual(mock_post.call_count, ...) checkrequestfunctionbycallcount
 
     """
 
@@ -174,7 +174,7 @@ class TestNotificationServiceSendToMethods(unittest.TestCase):
 
 
 class TestNotificationServiceReportGeneration(unittest.TestCase):
-    """报告生成与选路相关测试。"""
+    """report generationwithroutingrelatedtesting。"""
 
     @mock.patch("src.notification.get_config")
     def test_generate_aggregate_report_routes_by_report_type(self, mock_get_config: mock.MagicMock):
@@ -182,11 +182,11 @@ class TestNotificationServiceReportGeneration(unittest.TestCase):
         service = NotificationService()
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
+            name="Kweichow Moutai",
             sentiment_score=72,
-            trend_prediction="看多",
-            operation_advice="持有",
-            analysis_summary="稳健",
+            trend_prediction="bullish",
+            operation_advice="hold",
+            analysis_summary="steady",
         )
 
         with mock.patch.object(service, "generate_dashboard_report", return_value="dashboard") as mock_dashboard, mock.patch.object(
@@ -206,18 +206,18 @@ class TestNotificationServiceReportGeneration(unittest.TestCase):
         service = NotificationService()
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
+            name="Kweichow Moutai",
             sentiment_score=72,
-            trend_prediction="看多",
-            operation_advice="持有",
-            analysis_summary="稳健",
+            trend_prediction="bullish",
+            operation_advice="hold",
+            analysis_summary="steady",
         )
 
         with mock.patch("src.services.report_renderer.render") as mock_render:
             out = service.generate_single_stock_report(result)
 
         mock_render.assert_not_called()
-        self.assertIn("贵州茅台", out)
+        self.assertIn("Kweichow Moutai", out)
         self.assertIn("600519", out)
 
     @mock.patch("src.notification.get_config")
@@ -268,8 +268,8 @@ class TestNotificationServiceReportGeneration(unittest.TestCase):
             code="AAPL",
             name="Apple",
             sentiment_score=61,
-            trend_prediction="看多",
-            operation_advice="持有",
+            trend_prediction="bullish",
+            operation_advice="hold",
             analysis_summary="Wait for confirmation.",
             report_language="en",
             buy_reason="Momentum remains constructive.",
@@ -287,10 +287,10 @@ class TestNotificationServiceReportGeneration(unittest.TestCase):
         self.assertIn("Moving Averages", out)
         self.assertIn("Volume", out)
         self.assertIn("News Flow", out)
-        self.assertNotIn("操作理由", out)
-        self.assertNotIn("风险提示", out)
-        self.assertNotIn("技术面", out)
-        self.assertNotIn("消息面", out)
+        self.assertNotIn("operation reason", out)
+        self.assertNotIn("riskTip", out)
+        self.assertNotIn("technicals", out)
+        self.assertNotIn("messageaspect", out)
 
     @mock.patch("src.notification.get_config")
     def test_generate_single_stock_report_localizes_english_fallback(self, mock_get_config: mock.MagicMock):
@@ -328,11 +328,11 @@ class TestNotificationServiceReportGeneration(unittest.TestCase):
         service = NotificationService()
         result = AnalysisResult(
             code="600519",
-            name="贵州茅台",
+            name="Kweichow Moutai",
             sentiment_score=72,
-            trend_prediction="看多",
-            operation_advice="持有",
-            analysis_summary="稳健",
+            trend_prediction="bullish",
+            operation_advice="hold",
+            analysis_summary="steady",
             query_id="q-1",
         )
 

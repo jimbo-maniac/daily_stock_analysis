@@ -134,7 +134,7 @@ class TestPipelineWechatOnlyImageRouting(unittest.TestCase):
         pipeline.notifier._send_wechat_image.assert_not_called()
         pipeline.notifier.send_to_wechat.assert_called_once_with("wechat-dashboard")
         self.assertTrue(
-            any("企业微信 Markdown 转图片失败" in str(call.args[0]) for call in mock_warning.call_args_list)
+            any("Enterprise WeChat Markdown convertimagefailed" in str(call.args[0]) for call in mock_warning.call_args_list)
         )
 
 

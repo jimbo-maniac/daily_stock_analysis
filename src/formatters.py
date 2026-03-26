@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-格式化工具模块
+formattingtoolmodule
 ===================================
 
-提供各种内容格式化工具函数，用于将通用格式转换为平台特定格式。
+provideeachtypecontentformattingutility function，forwillgenericformatconvertingasplatformspecificformat。
 """
 
 import re
@@ -12,7 +12,7 @@ from typing import List
 
 import markdown2
 
-TRUNCATION_SUFFIX = "\n\n...(本段内容过长已截断)"
+TRUNCATION_SUFFIX = "\n\n...(thissegmentcontentlongalreadytruncate)"
 PAGE_MARKER_PREFIX = f"\n\n📄"
 PAGE_MARKER_SAFE_BYTES = 16 # "\n\n📄 9999/9999"
 PAGE_MARKER_SAFE_LEN = 13   # "\n\n📄 9999/9999"
@@ -29,13 +29,13 @@ def _page_marker(i: int, total: int) -> str:
 
 
 def _is_special_char(c: str) -> bool:
-    """判断字符是否为特殊字符
+    """determinecharacterwhether isspecialcharacter
     
     Args:
-        c: 字符
+        c: character
         
     Returns:
-        True 如果字符为特殊字符，False 否则
+        True ifcharacterasspecialcharacter，False otherwise
     """
     if len(c) != 1:
         return False
@@ -45,10 +45,10 @@ def _is_special_char(c: str) -> bool:
 
 def _count_special_chars(s: str) -> int:
     """
-    计算字符串中的特殊字符数量
+    calculatingstringinspecialcharacterquantity
     
     Args:
-        s: 字符串
+        s: string
     """
     # reg find all (0x10000, 0xFFFFF)
     match = _SPECIAL_CHAR_REGEX.findall(s)
@@ -57,14 +57,14 @@ def _count_special_chars(s: str) -> int:
 
 def _effective_len(s: str, special_char_len: int = 2) -> int:
     """
-    计算字符串的有效长度
+    calculatingstringvalidlength
     
     Args:
-        s: 字符串
-        special_char_len: 每个特殊字符的长度，默认为 2
+        s: string
+        special_char_len: length per special character，defaultas 2
         
     Returns:
-        s 的有效长度
+        s validlength
     """
     n = len(s)
     n += _count_special_chars(s) * (special_char_len - 1)
@@ -73,15 +73,15 @@ def _effective_len(s: str, special_char_len: int = 2) -> int:
 
 def _slice_at_effective_len(s: str, effective_len: int, special_char_len: int = 2) -> tuple[str, str]:
     """
-    按有效长度分割字符串
+    byvalidlengthsplittingstring
     
     Args:
-        s: 字符串
-        effective_len: 有效长度
-        special_char_len: 每个特殊字符的长度，默认为 2
+        s: string
+        effective_len: validlength
+        special_char_len: length per special character，defaultas 2
         
     Returns:
-        分割后的前、后部分字符串
+        splittingafterbefore、afterpartialstring
     """
     if _effective_len(s, special_char_len) <= effective_len:
         return s, ""
@@ -226,35 +226,35 @@ def markdown_to_html_document(markdown_text: str) -> str:
 
 def markdown_to_plain_text(markdown_text: str) -> str:
     """
-    将 Markdown 转换为纯文本
+    will Markdown convertingasplain text
     
-    移除 Markdown 格式标记，保留可读性
+    remove Markdown formatmark，keepreadability
     """
     text = markdown_text
     
-    # 移除标题标记 # ## ###
+    # removetitlemark # ## ###
     text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
     
-    # 移除加粗 **text** -> text
+    # removebold **text** -> text
     text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
     
-    # 移除斜体 *text* -> text
+    # removeslopebody *text* -> text
     text = re.sub(r'\*(.+?)\*', r'\1', text)
     
-    # 移除引用 > text -> text
+    # removereference > text -> text
     text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
     
-    # 移除列表标记 - item -> item
+    # removelistmark - item -> item
     text = re.sub(r'^[-*]\s+', '• ', text, flags=re.MULTILINE)
     
-    # 移除分隔线 ---
+    # removeseparateline ---
     text = re.sub(r'^---+$', '────────', text, flags=re.MULTILINE)
     
-    # 移除表格语法 |---|---|
+    # removetablesyntax |---|---|
     text = re.sub(r'\|[-:]+\|[-:|\s]+\|', '', text)
     text = re.sub(r'^\|(.+)\|$', r'\1', text, flags=re.MULTILINE)
     
-    # 清理多余空行
+    # cleanmultipleremainingemptyrow
     text = re.sub(r'\n{3,}', '\n\n', text)
     
     return text.strip()
@@ -268,7 +268,7 @@ def _chunk_by_max_bytes(content: str, max_bytes: int) -> List[str]:
     if _bytes(content) <= max_bytes:
         return [content]
     if max_bytes < MIN_MAX_BYTES:
-        raise ValueError(f"max_bytes={max_bytes} < {MIN_MAX_BYTES}, 可能陷入无限递归。")
+        raise ValueError(f"max_bytes={max_bytes} < {MIN_MAX_BYTES}, may fall into infinite recursion。")
     
     sections: List[str] = []
     suffix = TRUNCATION_SUFFIX
@@ -282,7 +282,7 @@ def _chunk_by_max_bytes(content: str, max_bytes: int) -> List[str]:
         if content.strip() != "":
             sections.append(chunk + suffix)
         else:
-            # 最后一段了，直接添加并离开循环
+            # mostaftera paragraph，directlyaddandleaveloop
             sections.append(chunk)
             break
     return sections
@@ -290,27 +290,27 @@ def _chunk_by_max_bytes(content: str, max_bytes: int) -> List[str]:
 
 def chunk_content_by_max_bytes(content: str, max_bytes: int, add_page_marker: bool = False) -> List[str]:
     """
-    按字节数智能分割消息内容
+    bybytescountintelligentsplittingmessagecontent
     
     Args:
-        content: 完整消息内容
-        max_bytes: 单条消息最大字节数
-        add_page_marker: 是否添加分页标记
+        content: completemessagecontent
+        max_bytes: single entrymessagemax bytes
+        add_page_marker: whetheraddpaginationmark
         
     Returns:
-        分割后的区块列表
+        splittingblock afterlist
     """
     def _chunk(content: str, max_bytes: int) -> List[str]:
-        # 优先按分隔线/标题分割，保证分页自然
+        # prioritize byseparateline/titlesplitting，guaranteepaginationnatural
         if max_bytes < MIN_MAX_BYTES:
-            raise ValueError(f"max_bytes={max_bytes} < {MIN_MAX_BYTES}, 可能陷入无限递归。")
+            raise ValueError(f"max_bytes={max_bytes} < {MIN_MAX_BYTES}, may fall into infinite recursion。")
         
         if _bytes(content) <= max_bytes:
             return [content]
         
         sections, separator = _chunk_by_separators(content)
         if separator == "" and len(sections) == 1:
-            # 无法智能分割，则强制按字数分割
+            # unable tointelligentsplitting，thenmandatoryby word countsplitting
             return _chunk_by_max_bytes(content, max_bytes)
         
         chunks: List[str] = []
@@ -323,15 +323,15 @@ def chunk_content_by_max_bytes(content: str, max_bytes: int, add_page_marker: bo
             section += separator
             section_bytes = _bytes(section)
             
-            # 如果单个 section 就超长，需要强制截断
+            # ifsingle section thenextra long，needmandatorytruncate
             if section_bytes > effective_max_bytes:
-                # 先保存当前积累的内容
+                # firstsavingcurrentaccumulatecontent
                 if current_chunk:
                     chunks.append("".join(current_chunk))
                     current_chunk = []
                     current_bytes = 0
 
-                # 强制按字节截断，避免整段被截断丢失
+                # mandatorybybytestruncate，avoidentire segmentbytruncatelost
                 section_chunks = _chunk(
                     section[:-separator_bytes], effective_max_bytes
                 )
@@ -339,9 +339,9 @@ def chunk_content_by_max_bytes(content: str, max_bytes: int, add_page_marker: bo
                 chunks.extend(section_chunks)
                 continue
 
-            # 检查加入后是否超长
+            # checkaddafterwhetherextra long
             if current_bytes + section_bytes > effective_max_bytes:
-                # 保存当前块，开始新块
+                # savingcurrent block，startingnewblock
                 if current_chunk:
                     chunks.append("".join(current_chunk))
                 current_chunk = [section]
@@ -350,11 +350,11 @@ def chunk_content_by_max_bytes(content: str, max_bytes: int, add_page_marker: bo
                 current_chunk.append(section)
                 current_bytes += section_bytes
                 
-        # 添加最后一块
+        # addmostafteroneblock
         if current_chunk:
             chunks.append("".join(current_chunk))
             
-        # 移除最后一个块的分割符
+        # removemostafteronecountblocksplittingsymbol
         if (chunks and 
             len(chunks[-1]) > separator_bytes and 
             chunks[-1][-separator_bytes:] == separator
@@ -376,20 +376,20 @@ def chunk_content_by_max_bytes(content: str, max_bytes: int, add_page_marker: bo
 
 def slice_at_max_bytes(text: str, max_bytes: int) -> tuple[str, str]:
     """
-    按字节数截断字符串，确保不会在多字节字符中间截断
+    bybytescounttruncatestring，ensurenotwillinmultiplebytescharacterinbetweentruncate
 
     Args:
-        text: 要截断的字符串
-        max_bytes: 最大字节数
+        text: needtruncatestring
+        max_bytes: max bytes
 
     Returns:
-        (截断后的字符串, 剩余未截断内容)
+        (truncateafterstring, remainingnottruncatecontent)
     """
     encoded = text.encode("utf-8")
     if len(encoded) <= max_bytes:
         return text, ""
 
-    # 从最大字节数开始向前查找，找到完整的 UTF-8 字符边界
+    # frommax bytesstartingtobeforefind，findtocomplete UTF-8 characterboundary
     truncated = encoded[:max_bytes]
     while truncated and (truncated[-1] & 0xC0) == 0x80:
         truncated = truncated[:-1]
@@ -400,41 +400,41 @@ def slice_at_max_bytes(text: str, max_bytes: int) -> tuple[str, str]:
 
 def format_feishu_markdown(content: str) -> str:
     """
-    将通用 Markdown 转换为飞书 lark_md 更友好的格式
+    willgeneric Markdown convertingasFeishu lark_md morefriendlygoodformat
     
-    转换规则：
-    - 飞书不支持 Markdown 标题（# / ## / ###），用加粗代替
-    - 引用块使用前缀替代
-    - 分隔线统一为细线
-    - 表格转换为条目列表
+    convertingrule：
+    - Feishunot supported Markdown title（# / ## / ###），useboldreplace
+    - referenceblockuseprefixreplace
+    - separatelineunifiedasdetailline
+    - tableconvertingasitemsitemlist
     
     Args:
-        content: 原始 Markdown 内容
+        content: raw Markdown content
         
     Returns:
-        转换后的飞书 Markdown 格式内容
+        convertingafterFeishu Markdown formatcontent
         
     Example:
-        >>> markdown = "# 标题\\n> 引用\\n| 列1 | 列2 |"
+        >>> markdown = "# title\\n> reference\\n| column1 | column2 |"
         >>> formatted = format_feishu_markdown(markdown)
         >>> print(formatted)
-        **标题**
-        💬 引用
-        • 列1：值1 | 列2：值2
+        **title**
+        💬 reference
+        • column1：value1 | column2：value2
     """
     def _flush_table_rows(buffer: List[str], output: List[str]) -> None:
-        """将表格缓冲区中的行转换为飞书格式"""
+        """willtable bufferzoneinrowconvertingasFeishuformat"""
         if not buffer:
             return
 
         def _parse_row(row: str) -> List[str]:
-            """解析表格行，提取单元格"""
+            """parsingtablerow，extractunitstyle"""
             cells = [c.strip() for c in row.strip().strip('|').split('|')]
             return [c for c in cells if c]
 
         rows = []
         for raw in buffer:
-            # 跳过分隔行（如 |---|---|）
+            # skipseparaterow（e.g. |---|---|）
             if re.match(r'^\s*\|?\s*[:-]+\s*(\|\s*[:-]+\s*)+\|?\s*$', raw):
                 continue
             parsed = _parse_row(raw)
@@ -449,7 +449,7 @@ def format_feishu_markdown(content: str) -> str:
         for row in data_rows:
             pairs = []
             for idx, cell in enumerate(row):
-                key = header[idx] if idx < len(header) else f"列{idx + 1}"
+                key = header[idx] if idx < len(header) else f"column{idx + 1}"
                 pairs.append(f"{key}：{cell}")
             output.append(f"• {' | '.join(pairs)}")
 
@@ -459,34 +459,34 @@ def format_feishu_markdown(content: str) -> str:
     for raw_line in content.splitlines():
         line = raw_line.rstrip()
 
-        # 处理表格行
+        # processingtablerow
         if line.strip().startswith('|'):
             table_buffer.append(line)
             continue
 
-        # 刷新表格缓冲区
+        # refreshtable bufferzone
         if table_buffer:
             _flush_table_rows(table_buffer, lines)
             table_buffer = []
 
-        # 转换标题（# ## ### 等）
+        # convertingtitle（# ## ### etc）
         if re.match(r'^#{1,6}\s+', line):
             title = re.sub(r'^#{1,6}\s+', '', line).strip()
             line = f"**{title}**" if title else ""
-        # 转换引用块
+        # convertingreferenceblock
         elif line.startswith('> '):
             quote = line[2:].strip()
             line = f"💬 {quote}" if quote else ""
-        # 转换分隔线
+        # convertingseparateline
         elif line.strip() == '---':
             line = '────────'
-        # 转换列表项
+        # convertinglistitem
         elif line.startswith('- '):
             line = f"• {line[2:].strip()}"
 
         lines.append(line)
 
-    # 处理末尾的表格
+    # processingendtailtable
     if table_buffer:
         _flush_table_rows(table_buffer, lines)
 
@@ -495,42 +495,42 @@ def format_feishu_markdown(content: str) -> str:
 
 def _chunk_by_separators(content: str) -> tuple[list[str], str]:
     """
-    通过分割线等特殊字符将消息内容分割为多个区块
+    viasplittinglineetcspecialcharacterwillmessagecontentsplittingasmultiplecountzoneblock
     
     Args:
-        content: 完整消息内容
+        content: completemessagecontent
         
     Returns:
-        sections: 分割后的区块列表
-        separator: 区块之间的分隔符，None 表示无法分割
+        sections: splittingblock afterlist
+        separator: zoneblockbetweenseparatesymbol，None indicatesunable tosplitting
     """
-    # 智能分割：优先按 "---" 分隔（股票之间的分隔线）
-    # 其次尝试各级标题分割
+    # intelligentsplitting：prioritize by "---" separate（stockbetweenseparateline）
+    # itstimestryeachleveltitlesplitting
     if "\n---\n" in content:
         sections = content.split("\n---\n")
         separator = "\n---\n"
     elif "\n# " in content:
-        # 按 # 分割 (兼容一级标题)
+        # by # splitting (compatiblefirst leveltitle)
         parts = content.split("\n## ")
         sections = [parts[0]] + [f"## {p}" for p in parts[1:]]
         separator = "\n"
     elif "\n## " in content:
-        # 按 ## 分割 (兼容二级标题)
+        # by ## splitting (compatibletwoleveltitle)
         parts = content.split("\n## ")
         sections = [parts[0]] + [f"## {p}" for p in parts[1:]]
         separator = "\n"
     elif "\n### " in content:
-        # 按 ### 分割
+        # by ### splitting
         parts = content.split("\n### ")
         sections = [parts[0]] + [f"### {p}" for p in parts[1:]]
         separator = "\n"
     elif "\n**" in content:
-        # 按 ** 加粗标题分割 (兼容 AI 未输出标准 Markdown 标题的情况)
+        # by ** boldtitlesplitting (compatible AI notoutputstandard Markdown titlesituation)
         parts = content.split("\n**")
         sections = [parts[0]] + [f"**{p}" for p in parts[1:]]
         separator = "\n"
     elif "\n" in content:
-        # 按 \n 分割
+        # by \n splitting
         sections = content.split("\n")
         separator = "\n"
     else:
@@ -540,26 +540,26 @@ def _chunk_by_separators(content: str) -> tuple[list[str], str]:
 
 def _chunk_by_max_words(content: str, max_words: int, special_char_len: int = 2) -> list[str]:
     """
-    按字数分割消息内容
+    by word countsplittingmessagecontent
     
     Args:
-        content: 完整消息内容
-        max_words: 单条消息最大字数
-        special_char_len: 每个特殊字符的长度，默认为 2
+        content: completemessagecontent
+        max_words: single entrymessagemaxcharactercount
+        special_char_len: length per special character，defaultas 2
         
     Returns:
-        分割后的区块列表
+        splittingblock afterlist
     """
     if _effective_len(content, special_char_len) <= max_words:
         return [content]
     if max_words < MIN_MAX_WORDS:
         raise ValueError(
-            f"max_words={max_words} < {MIN_MAX_WORDS}, 可能陷入无限递归。"
+            f"max_words={max_words} < {MIN_MAX_WORDS}, may fall into infinite recursion。"
         )
 
     sections = []
     suffix = TRUNCATION_SUFFIX
-    effective_max_words = max_words - len(suffix)  # 预留后缀，避免边界超限
+    effective_max_words = max_words - len(suffix)  # reservesuffix，avoidboundaryover limit
     if effective_max_words <= 0:
         effective_max_words = max_words
         suffix = ""
@@ -569,7 +569,7 @@ def _chunk_by_max_words(content: str, max_words: int, special_char_len: int = 2)
         if content.strip() != "":
             sections.append(chunk + suffix)
         else:
-            # 最后一段了，直接添加并离开循环
+            # mostaftera paragraph，directlyaddandleaveloop
             sections.append(chunk)
             break
     return sections
@@ -582,49 +582,49 @@ def chunk_content_by_max_words(
     add_page_marker: bool = False
     ) -> list[str]:
     """
-    按字数智能分割消息内容
+    by word countintelligentsplittingmessagecontent
     
     Args:
-        content: 完整消息内容
-        max_words: 单条消息最大字数
-        special_char_len: 每个特殊字符的长度，默认为 2
-        add_page_marker: 是否添加分页标记
+        content: completemessagecontent
+        max_words: single entrymessagemaxcharactercount
+        special_char_len: length per special character，defaultas 2
+        add_page_marker: whetheraddpaginationmark
         
     Returns:
-        分割后的区块列表
+        splittingblock afterlist
     """
     def _chunk(content: str, max_words: int, special_char_len: int = 2) -> list[str]:
         if max_words < MIN_MAX_WORDS:
-            # Safe guard，避免无限递归
-            # 理论上，max_words在每次递归中可以减小到无限小，但实际中不太可能发生，
-            # 除非每次_chunk_by_separators都能成功返回分隔符，且max_words初始值太小。
-            raise ValueError(f"max_words={max_words} < {MIN_MAX_WORDS}, 可能陷入无限递归。")
+            # Safe guard，avoidnolimitrecursive
+            # reasonin theory，max_wordsineach timerecursiveincanreducesmalltonolimitsmall，butactualinnottoopossiblysendgenerate，
+            # exceptnon-each time_chunk_by_separatorsallcansuccessfulreturnseparatesymbol，andmax_wordsinitialvaluetoosmall。
+            raise ValueError(f"max_words={max_words} < {MIN_MAX_WORDS}, may fall into infinite recursion。")
         
         if _effective_len(content, special_char_len) <= max_words:
             return [content]
 
         sections, separator = _chunk_by_separators(content)
         if separator == "" and len(sections) == 1:
-            # 无法智能分割，则强制按字数分割
+            # unable tointelligentsplitting，thenmandatoryby word countsplitting
             return _chunk_by_max_words(content, max_words, special_char_len)
 
         chunks = []
         current_chunk = []
         current_word_len = 0
         separator_len = len(separator) if separator else 0
-        effective_max_words = max_words - separator_len # 预留分割符长度，避免边界超限
+        effective_max_words = max_words - separator_len # reservesplittingsymbollength，avoidboundaryover limit
 
         for section in sections:
             section += separator
             section_word_len = _effective_len(section, special_char_len)
 
-            # 如果单个 section 就超长，需要强制截断
+            # ifsingle section thenextra long，needmandatorytruncate
             if section_word_len > max_words:
-                # 先保存当前积累的内容
+                # firstsavingcurrentaccumulatecontent
                 if current_chunk:
                     chunks.append("".join(current_chunk))
 
-                # 强制截断这个超长 section
+                # mandatorytruncatethiscountextra long section
                 section_chunks = _chunk(
                     section[:-separator_len], effective_max_words, special_char_len
                     )
@@ -632,9 +632,9 @@ def chunk_content_by_max_words(
                 chunks.extend(section_chunks)
                 continue
 
-            # 检查加入后是否超长
+            # checkaddafterwhetherextra long
             if current_word_len + section_word_len > max_words:
-                # 保存当前块，开始新块
+                # savingcurrent block，startingnewblock
                 if current_chunk:
                     chunks.append("".join(current_chunk))
                 current_chunk = [section]
@@ -643,11 +643,11 @@ def chunk_content_by_max_words(
                 current_chunk.append(section)
                 current_word_len += section_word_len
 
-        # 添加最后一块
+        # addmostafteroneblock
         if current_chunk:
             chunks.append("".join(current_chunk))
 
-        # 移除最后一个块的分割符
+        # removemostafteronecountblocksplittingsymbol
         if (chunks and
             len(chunks[-1]) > separator_len and
             chunks[-1][-separator_len:] == separator

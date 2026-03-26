@@ -147,7 +147,7 @@ class TestTavilySearchProvider(unittest.TestCase):
                         news_max_age_days=3,
                         news_strategy_profile="short",
                     )
-                    resp = service.search_stock_news("BABA", "阿里巴巴", max_results=3)
+                    resp = service.search_stock_news("BABA", "Alibaba", max_results=3)
 
                 self.assertTrue(resp.success)
                 self.assertEqual(len(resp.results), 1)
@@ -170,7 +170,7 @@ class TestTavilySearchProvider(unittest.TestCase):
                 tavily_keys=["dummy_key"],
                 searxng_public_instances_enabled=False,
             )
-            resp = service.search_stock_events("BABA", "阿里巴巴")
+            resp = service.search_stock_events("BABA", "Alibaba")
 
         self.assertTrue(resp.success)
         self.assertEqual(len(resp.results), 1)
@@ -198,7 +198,7 @@ class TestTavilySearchProvider(unittest.TestCase):
                 news_max_age_days=3,
                 news_strategy_profile="short",
             )
-            intel = service.search_comprehensive_intel("BABA", "阿里巴巴", max_searches=2)
+            intel = service.search_comprehensive_intel("BABA", "Alibaba", max_searches=2)
 
         self.assertIn("latest_news", intel)
         self.assertIn("market_analysis", intel)
@@ -228,7 +228,7 @@ class TestTavilySearchProvider(unittest.TestCase):
                 news_max_age_days=3,
                 news_strategy_profile="short",
             )
-            intel = service.search_comprehensive_intel("510300", "沪深300ETF", max_searches=3)
+            intel = service.search_comprehensive_intel("510300", "Shanghai-Shenzhen300ETF", max_searches=3)
 
         self.assertIn("latest_news", intel)
         self.assertIn("market_analysis", intel)
@@ -260,7 +260,7 @@ class TestTavilySearchProvider(unittest.TestCase):
                 news_max_age_days=3,
                 news_strategy_profile="short",
             )
-            intel = service.search_comprehensive_intel("600519", "贵州茅台", max_searches=3)
+            intel = service.search_comprehensive_intel("600519", "Kweichow Moutai", max_searches=3)
 
         self.assertIn("latest_news", intel)
         self.assertIn("market_analysis", intel)

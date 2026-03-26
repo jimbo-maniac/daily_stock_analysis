@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-Bot Webhook 处理器
+Bot Webhook handler
 ===================================
 
-处理各平台的 Webhook 回调，分发到命令处理器。
+processingeachplatform Webhook pullback，dispatchtocommandhandler。
 """
 
 import json
@@ -20,28 +20,28 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# 平台实例缓存
+# platforminstancecache
 _platform_instances: Dict[str, 'BotPlatform'] = {}
 
 
 def get_platform(platform_name: str) -> Optional['BotPlatform']:
     """
-    获取平台适配器实例
+    getplatformadapterinstance
     
-    使用缓存避免重复创建。
+    usecacheavoid duplicatecreating。
     
     Args:
-        platform_name: 平台名称
+        platform_name: platformname
         
     Returns:
-        平台适配器实例，或 None
+        platformadapterinstance，or None
     """
     if platform_name not in _platform_instances:
         platform_class = ALL_PLATFORMS.get(platform_name)
         if platform_class:
             _platform_instances[platform_name] = platform_class()
         else:
-            logger.warning(f"[BotHandler] 未知平台: {platform_name}")
+            logger.warning(f"[BotHandler] unknownplatform: {platform_name}")
             return None
     
     return _platform_instances[platform_name]
@@ -54,63 +54,63 @@ def handle_webhook(
     query_params: Optional[Dict[str, list]] = None
 ) -> WebhookResponse:
     """
-    处理 Webhook 请求
+    processing Webhook request
     
-    这是所有平台 Webhook 的统一入口。
+    thisisallplatform Webhook unifiedentry。
     
     Args:
-        platform_name: 平台名称 (feishu, dingtalk, wecom, telegram)
-        headers: HTTP 请求头
-        body: 请求体原始字节
-        query_params: URL 查询参数（用于某些平台的验证）
+        platform_name: platformname (feishu, dingtalk, wecom, telegram)
+        headers: HTTP request headers
+        body: request bodyraw bytes
+        query_params: URL queryingparameter（forsomeplatformverification）
         
     Returns:
-        WebhookResponse 响应对象
+        WebhookResponse responseobject
     """
-    logger.info(f"[BotHandler] 收到 {platform_name} Webhook 请求")
+    logger.info(f"[BotHandler] received {platform_name} Webhook request")
     
-    # 检查机器人功能是否启用
+    # checkbotfeaturewhetherenabled
     from src.config import get_config
     config = get_config()
     
     if not getattr(config, 'bot_enabled', True):
-        logger.info("[BotHandler] 机器人功能未启用")
+        logger.info("[BotHandler] botfeature notenabled")
         return WebhookResponse.success()
     
-    # 获取平台适配器
+    # getplatformadapter
     platform = get_platform(platform_name)
     if not platform:
         return WebhookResponse.error(f"Unknown platform: {platform_name}", 400)
     
-    # 解析 JSON 数据
+    # parsing JSON data
     try:
         data = json.loads(body.decode('utf-8')) if body else {}
     except json.JSONDecodeError as e:
-        logger.error(f"[BotHandler] JSON 解析失败: {e}")
+        logger.error(f"[BotHandler] JSON parse failed: {e}")
         return WebhookResponse.error("Invalid JSON", 400)
     
-    logger.debug(f"[BotHandler] 请求数据: {json.dumps(data, ensure_ascii=False)[:500]}")
+    logger.debug(f"[BotHandler] request countdata: {json.dumps(data, ensure_ascii=False)[:500]}")
     
-    # 处理 Webhook
+    # processing Webhook
     message, challenge_response = platform.handle_webhook(headers, body, data)
     
-    # 如果是验证请求，直接返回验证响应
+    # if it isverificationrequest，return directlyverificationresponse
     if challenge_response:
-        logger.info(f"[BotHandler] 返回验证响应")
+        logger.info(f"[BotHandler] returnverificationresponse")
         return challenge_response
     
-    # 如果没有消息需要处理，返回空响应
+    # if nomessageneedprocessing，return emptyresponse
     if not message:
-        logger.debug("[BotHandler] 无需处理的消息")
+        logger.debug("[BotHandler] no need forprocessingmessage")
         return WebhookResponse.success()
     
-    logger.info(f"[BotHandler] 解析到消息: user={message.user_name}, content={message.content[:50]}")
+    logger.info(f"[BotHandler] parsingtomessage: user={message.user_name}, content={message.content[:50]}")
     
-    # 分发到命令处理器
+    # dispatchtocommandhandler
     dispatcher = get_dispatcher()
     response = dispatcher.dispatch(message)
     
-    # 格式化响应
+    # formattingresponse
     if response.text:
         webhook_response = platform.format_response(response, message)
         return webhook_response
@@ -119,20 +119,20 @@ def handle_webhook(
 
 
 def handle_feishu_webhook(headers: Dict[str, str], body: bytes) -> WebhookResponse:
-    """处理飞书 Webhook"""
+    """processingFeishu Webhook"""
     return handle_webhook('feishu', headers, body)
 
 
 def handle_dingtalk_webhook(headers: Dict[str, str], body: bytes) -> WebhookResponse:
-    """处理钉钉 Webhook"""
+    """processingDingTalk Webhook"""
     return handle_webhook('dingtalk', headers, body)
 
 
 def handle_wecom_webhook(headers: Dict[str, str], body: bytes) -> WebhookResponse:
-    """处理企业微信 Webhook"""
+    """processingEnterprise WeChat Webhook"""
     return handle_webhook('wecom', headers, body)
 
 
 def handle_telegram_webhook(headers: Dict[str, str], body: bytes) -> WebhookResponse:
-    """处理 Telegram Webhook"""
+    """processing Telegram Webhook"""
     return handle_webhook('telegram', headers, body)

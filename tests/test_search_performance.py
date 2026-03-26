@@ -29,8 +29,8 @@ class TestSearchPerformance:
         # 1. Realistic mixed inputs (codes, names, typos)
         inputs = [
             "600519", "00700", "AAPL", "TSLA",
-            "贵州茅台", "腾讯控股", "阿里巴巴",
-            "贵州茅苔", "平安银形", # typos
+            "Kweichow Moutai", "Tencent Holdings", "Alibaba",
+            "Kweichow Moutai", "Ping Ansilver-shaped", # typos
             "aaaaaaa", "1234567", # garbage
         ]
         
@@ -52,10 +52,10 @@ class TestSearchPerformance:
     def test_fuzzy_match_performance_large_set(self, mock_akshare):
         """Test difflib fuzzy matching performance with a 5000+ stock set."""
         # Simulate 5000 stocks from AkShare
-        fake_market = {f"股票_{i}": f"{i:06d}" for i in range(5000)}
+        fake_market = {f"stock_{i}": f"{i:06d}" for i in range(5000)}
         mock_akshare.return_value = fake_market
         
-        query = "股票_4999" # Worst case or near worst case for fuzzy matching
+        query = "stock_4999" # Worst case or near worst case for fuzzy matching
         
         start_time = time.time()
         iterations = 20
