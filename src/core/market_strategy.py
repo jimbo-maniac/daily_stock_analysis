@@ -130,6 +130,60 @@ US_BLUEPRINT = MarketStrategyBlueprint(
 )
 
 
+GLOBAL_BLUEPRINT = MarketStrategyBlueprint(
+    region="global",
+    title="Global Macro Thematic Portfolio Strategy",
+    positioning=(
+        "European-based macro portfolio across 5 thematic buckets "
+        "(Hard Assets, Energy/Nuclear, Defense Supply Chain, Consumer Stress, Geopolitical). "
+        "Focus on cross-asset regime, thesis health, and relative-value pair signals."
+    ),
+    principles=[
+        "Read the macro regime from cross-asset signals: equities, bonds, commodities, FX, VIX.",
+        "Evaluate each thesis (Iran, Stagflation, Dalio Stage 6) for confirming or disconfirming evidence.",
+        "Translate into bucket-level tilt: overweight, neutral, or underweight.",
+        "Pair trade signals override single-name views when z-scores are extreme.",
+    ],
+    dimensions=[
+        StrategyDimension(
+            name="Cross-Asset Regime",
+            objective="Classify macro environment as risk-on, risk-off, or transitional.",
+            checkpoints=[
+                "SPX/STOXX50/DAX directional alignment",
+                "Gold vs TLT vs USD relative moves",
+                "VIX level and term structure",
+                "Brent crude direction and energy complex",
+            ],
+        ),
+        StrategyDimension(
+            name="Thesis Health",
+            objective="Check whether each active thesis is strengthening, intact, or weakening.",
+            checkpoints=[
+                "Iran settlement proxies: Brent, KSA, UAE, defense names",
+                "Stagflation proxies: Gold, TIPS, BTC, discount retail vs growth",
+                "Dalio Stage 6 proxies: defense spending, gold, VIX, EM divergence",
+            ],
+        ),
+        StrategyDimension(
+            name="Pair Trade Signals",
+            objective="Flag actionable spread dislocations in tracked pairs.",
+            checkpoints=[
+                "Spread z-scores exceeding +/- 2 standard deviations",
+                "Momentum divergence between long and short legs",
+                "Spread direction (widening vs narrowing) trend",
+            ],
+        ),
+    ],
+    action_framework=[
+        "Risk-on: broad equity strength, VIX below 18, thesis-aligned momentum — full allocation.",
+        "Neutral: mixed signals, thesis intact but not confirming — hold positions, tighten stops.",
+        "Risk-off: VIX spike, thesis disconfirmation, spread reversals — reduce exposure, hedge.",
+    ],
+)
+
+
 def get_market_strategy_blueprint(region: str) -> MarketStrategyBlueprint:
     """Return strategy blueprint by market region."""
+    if region in ("global", "eu"):
+        return GLOBAL_BLUEPRINT
     return US_BLUEPRINT if region == "us" else CN_BLUEPRINT

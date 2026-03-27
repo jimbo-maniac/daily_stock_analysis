@@ -24,6 +24,33 @@ from src.analyzer import GeminiAnalyzer
 logger = logging.getLogger(__name__)
 
 
+def _build_global_extra_sections() -> str:
+    """Build pair tracker + thesis health sections for global reports."""
+    sections = []
+
+    # Pair tracker
+    try:
+        from src.services.pair_tracker import PairTracker, format_pair_tracker_report
+        tracker = PairTracker()
+        pairs = tracker.analyze_all_pairs()
+        if pairs:
+            sections.append(format_pair_tracker_report(pairs))
+    except Exception as e:
+        logger.warning(f"Pair tracker failed (skipping): {e}")
+
+    # Thesis health
+    try:
+        from src.services.thesis_health import ThesisHealthChecker, format_thesis_report
+        checker = ThesisHealthChecker()
+        theses = checker.check_all()
+        if theses:
+            sections.append(format_thesis_report(theses))
+    except Exception as e:
+        logger.warning(f"Thesis health check failed (skipping): {e}")
+
+    return "\n\n".join(sections)
+
+
 def run_market_review(
     notifier: NotificationService,
     analyzer: Optional[GeminiAnalyzer] = None,
@@ -46,38 +73,53 @@ def run_market_review(
     Returns:
         reviewreporttext
     """
-    logger.info("startingexecute market reviewanalyzing...")
+    logger.info("Starting market review analysis...")
     config = get_config()
     region = (
         override_region
         if override_region is not None
-        else (getattr(config, 'market_review_region', 'cn') or 'cn')
+        else (getattr(config, 'market_review_region', 'global') or 'global')
     )
-    if region not in ('cn', 'us', 'both'):
-        region = 'cn'
+    if region not in ('cn', 'us', 'eu', 'global', 'both'):
+        region = 'global'
 
     try:
         if region == 'both':
-            # orderexecute A stocks + US stock，mergingreport
+            # Execute A-share + US stock reviews, merge report
             cn_analyzer = MarketAnalyzer(
                 search_service=search_service, analyzer=analyzer, region='cn'
             )
             us_analyzer = MarketAnalyzer(
                 search_service=search_service, analyzer=analyzer, region='us'
             )
-            logger.info("generating A stocksmarket reviewreport...")
+            logger.info("Generating A-share market review...")
             cn_report = cn_analyzer.run_daily_review()
-            logger.info("generatingUS stockmarket reviewreport...")
+            logger.info("Generating US market review...")
             us_report = us_analyzer.run_daily_review()
             review_report = ''
             if cn_report:
-                review_report = f"# A-sharemarket review\n\n{cn_report}"
+                review_report = f"# A-share Market Review\n\n{cn_report}"
             if us_report:
                 if review_report:
-                    review_report += "\n\n---\n\n> withbelowasUS stockmarket review\n\n"
-                review_report += f"# US stockmarket review\n\n{us_report}"
+                    review_report += "\n\n---\n\n"
+                review_report += f"# US Market Review\n\n{us_report}"
             if not review_report:
                 review_report = None
+        elif region in ('global', 'eu'):
+            # Global macro review with pair tracker and thesis health
+            market_analyzer = MarketAnalyzer(
+                search_service=search_service,
+                analyzer=analyzer,
+                region=region,
+            )
+            review_report = market_analyzer.run_daily_review()
+
+            # Append pair tracker and thesis health sections
+            extra_sections = _build_global_extra_sections()
+            if extra_sections and review_report:
+                review_report += "\n\n---\n\n" + extra_sections
+            elif extra_sections:
+                review_report = extra_sections
         else:
             market_analyzer = MarketAnalyzer(
                 search_service=search_service,

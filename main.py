@@ -254,7 +254,7 @@ def _compute_trading_day_filter(
 
     if config.market_review_enabled and not getattr(args, 'no_market_review', False):
         effective_region = compute_effective_region(
-            getattr(config, 'market_review_region', 'cn') or 'cn', open_markets
+            getattr(config, 'market_review_region', 'global') or 'global', open_markets
         )
     else:
         effective_region = None
@@ -628,7 +628,7 @@ def main() -> int:
                 from src.core.trading_calendar import get_open_markets_today, compute_effective_region as _compute_region
                 open_markets = get_open_markets_today()
                 effective_region = _compute_region(
-                    getattr(config, 'market_review_region', 'cn') or 'cn', open_markets
+                    getattr(config, 'market_review_region', 'global') or 'global', open_markets
                 )
                 if effective_region == '':
                     logger.info("todaymarket reviewrelatedmarketaverageasnon-trading day，skipexecute。canuse --force-run mandatoryexecute。")

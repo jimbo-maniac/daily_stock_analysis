@@ -48,14 +48,34 @@ US_PROFILE = MarketProfile(
         "US stock market",
         "S&P 500 NASDAQ",
     ],
-    prompt_index_hint="analyzingS&P500、NASDAQ、pathrefers toetceachindextrendfeatures",
+    prompt_index_hint="Analyze S&P 500, NASDAQ, Dow Jones trend features",
+    has_market_stats=False,
+    has_sector_rankings=False,
+)
+
+GLOBAL_PROFILE = MarketProfile(
+    region="global",
+    mood_index_code="SPX",
+    news_queries=[
+        "global macro market outlook",
+        "European stock market DAX STOXX",
+        "gold oil commodities geopolitical risk",
+        "inflation central bank policy rates",
+        "S&P 500 NASDAQ market",
+    ],
+    prompt_index_hint=(
+        "Analyze S&P 500, EURO STOXX 50, DAX, FTSE, Gold, Brent, VIX, "
+        "EUR/USD, and Bitcoin as a connected macro dashboard"
+    ),
     has_market_stats=False,
     has_sector_rankings=False,
 )
 
 
 def get_profile(region: str) -> MarketProfile:
-    """based on region returntoshould MarketProfile"""
+    """Return MarketProfile for the given region."""
     if region == "us":
         return US_PROFILE
+    if region in ("global", "eu"):
+        return GLOBAL_PROFILE
     return CN_PROFILE

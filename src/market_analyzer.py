@@ -107,7 +107,7 @@ class MarketAnalyzer:
         self.search_service = search_service
         self.analyzer = analyzer
         self.data_manager = DataFetcherManager()
-        self.region = region if region in ("cn", "us") else "cn"
+        self.region = region if region in ("cn", "us", "global", "eu") else "cn"
         self.profile: MarketProfile = get_profile(self.region)
         self.strategy = get_market_strategy_blueprint(self.region)
 
@@ -462,6 +462,73 @@ Leading losers: {bottom_sectors_text if bottom_sectors_text else "No data"}"""
         )
         indices_placeholder = indices_text if indices_text else ("No index data (API error)" if self.region == "us" else "No index data (API error)")
         news_placeholder = news_text if news_text else ("No relevant news" if self.region == "us" else "No relevant news")
+
+        # Global macro portfolio prompt (European-based thematic investor)
+        if self.region in ("global", "eu"):
+            return f"""You are a senior macro strategist advising a European-based thematic portfolio investor.
+
+The portfolio is structured in 5 buckets: Hard Assets, Energy/Nuclear, Defense Supply Chain, Consumer Stress, and Geopolitical hedges. The investor uses Interactive Brokers from Amsterdam and can go long and short.
+
+Produce a concise global macro brief based on the data below.
+
+[Requirements]
+- Output pure Markdown only
+- No JSON, no code blocks
+- Focus on cross-asset narrative, not single-stock picks
+- Every section must connect back to portfolio implications
+
+---
+
+# Today's Market Data
+
+## Date
+{overview.date}
+
+## Global Indices & Cross-Asset Dashboard
+{indices_placeholder}
+
+{stats_block}
+
+{sector_block}
+
+## Market News
+{news_placeholder}
+
+{data_no_indices_hint}
+
+{self.strategy.to_prompt_block()}
+
+---
+
+# Output Template (follow this structure)
+
+## {overview.date} Global Macro Brief
+
+### 1. Regime Check
+(2-3 sentences: risk-on / risk-off / transitional? What is the cross-asset signal saying? SPX+STOXX+DAX alignment, VIX, Gold vs USD vs Bonds.)
+
+### 2. Cross-Asset Dashboard Commentary
+(Analyze indices, commodities, FX, crypto as interconnected signals. What is Brent telling us about Iran thesis? What is Gold/BTC saying about stagflation? What does VIX term structure imply?)
+
+### 3. Thesis Status
+(For each active thesis — Iran Settlement, Stagflation, Dalio Stage 6 — state whether today's data confirms, is neutral, or disconfirms. Be specific about which proxies moved.)
+
+### 4. Bucket Tilts
+(For each portfolio bucket — Hard Assets, Energy/Nuclear, Defense, Consumer Stress, Geopolitical — recommend overweight / neutral / underweight based on today's regime and thesis status.)
+
+### 5. Pair Trade Alerts
+(Flag any long/short pairs where spread has moved significantly. Mention direction and conviction.)
+
+### 6. Risk Alerts
+(Top 2-3 risks for next session. Be specific — not generic "markets are volatile".)
+
+### 7. Action Plan
+(Stance: offensive / balanced / defensive. One concrete action per bucket if warranted. One invalidation trigger that would flip the stance.)
+
+---
+
+Output the report content directly, no extra commentary.
+"""
 
         # US market scenario uses English prompts to generate reports better suited to US market context
         if self.region == "us":
