@@ -122,6 +122,14 @@ Example:
     )
 
     parser.add_argument(
+        '--report-mode',
+        type=str,
+        choices=['brief', 'full'],
+        default=None,
+        help='Report mode: brief (macro + thesis only) or full (complete analysis)'
+    )
+
+    parser.add_argument(
         '--market-review',
         action='store_true',
         help='onlyrunningmarket reviewanalyzing'
