@@ -64,7 +64,8 @@ def summarize_exception(exc: Exception) -> Tuple[str, str]:
 
 def normalize_stock_code(stock_code: str) -> str:
     """
-    Normalize stock code by stripping exchange prefixes/suffixes.
+    Normalize stock code by stripping Chinese exchange prefixes/suffixes
+    while preserving international exchange suffixes.
 
     Accepted formats and their normalized results:
     - '600519'      -> '600519'   (already clean)
@@ -78,12 +79,29 @@ def normalize_stock_code(stock_code: str) -> str:
     - 'HK00700'     -> 'HK00700'  (keep HK prefix for HK stocks)
     - '1810.HK'     -> 'HK01810'  (normalize HK suffix to canonical prefix form)
     - 'AAPL'        -> 'AAPL'     (keep US stock ticker as-is)
-
-    This function is applied at the DataProviderManager layer so that
-    all individual fetchers receive a clean 6-digit code (for A-shares/ETFs).
+    - 'BTC-USD'     -> 'BTC-USD'  (keep crypto pairs as-is)
+    - 'HENS.DE'     -> 'HENS.DE'  (keep European exchange suffix)
+    - 'FLOW.AS'     -> 'FLOW.AS'  (keep European exchange suffix)
+    - 'CHG.L'       -> 'CHG.L'   (keep European exchange suffix)
+    - 'AF.PA'       -> 'AF.PA'    (keep European exchange suffix)
+    - 'EURUSD=X'    -> 'EURUSD=X' (keep FX pairs as-is)
     """
+    from .us_index_mapping import is_european_ticker, is_crypto_pair, is_fx_pair
+
     code = stock_code.strip()
     upper = code.upper()
+
+    # Preserve crypto pairs (BTC-USD, ETH-USD)
+    if is_crypto_pair(upper):
+        return upper
+
+    # Preserve FX pairs (EURUSD=X)
+    if is_fx_pair(upper):
+        return upper
+
+    # Preserve European exchange suffixes (.DE, .AS, .L, .PA, .OL, .CO etc.)
+    if is_european_ticker(upper):
+        return upper
 
     # Normalize HK prefix to a canonical 5-digit form (e.g. hk1810 -> HK01810)
     if upper.startswith('HK') and not upper.startswith('HK.'):
@@ -119,11 +137,29 @@ ETF_PREFIXES = ("51", "52", "56", "58", "15", "16", "18")
 
 
 def _is_us_market(code: str) -> bool:
-    """determinewhether isUS stock/US stockindexcode（notincludeChinesebeforesuffix）。"""
+    """Determine whether code is a US stock/index (not including Chinese prefixes)."""
     from .us_index_mapping import is_us_stock_code, is_us_index_code
 
     normalized = (code or "").strip().upper()
     return is_us_index_code(normalized) or is_us_stock_code(normalized)
+
+
+def _is_european_market(code: str) -> bool:
+    """Determine whether code has a European exchange suffix."""
+    from .us_index_mapping import is_european_ticker
+    return is_european_ticker((code or "").strip().upper())
+
+
+def _is_crypto(code: str) -> bool:
+    """Determine whether code is a crypto pair (e.g. BTC-USD)."""
+    from .us_index_mapping import is_crypto_pair
+    return is_crypto_pair((code or "").strip().upper())
+
+
+def _is_fx(code: str) -> bool:
+    """Determine whether code is an FX pair (e.g. EURUSD=X)."""
+    from .us_index_mapping import is_fx_pair
+    return is_fx_pair((code or "").strip().upper())
 
 
 def _is_hk_market(code: str) -> bool:
@@ -155,7 +191,13 @@ def _is_etf_code(code: str) -> bool:
 
 
 def _market_tag(code: str) -> str:
-    """returnmarketlabel: cn/us/hk."""
+    """Return market label: us/eu/hk/crypto/fx/cn."""
+    if _is_crypto(code):
+        return "crypto"
+    if _is_fx(code):
+        return "fx"
+    if _is_european_market(code):
+        return "eu"
     if _is_us_market(code):
         return "us"
     if _is_hk_market(code):
@@ -811,23 +853,29 @@ class DataFetcherManager:
         Raises:
             DataFetchError: alldataall sourcesfailedraise when
         """
-        from .us_index_mapping import is_us_index_code, is_us_stock_code
+        from .us_index_mapping import is_us_index_code, is_us_stock_code, is_european_ticker, is_crypto_pair, is_fx_pair
 
-        # Normalize code (strip SH/SZ prefix etc.)
+        # Normalize code (strip SH/SZ prefix etc., preserve EU/crypto/FX)
         stock_code = normalize_stock_code(stock_code)
 
         errors = []
         total_fetchers = len(self._fetchers)
         request_start = time.time()
 
-        # fastpath：US stockindexwithUS stockstockby prioritydepend ontimestryalldatasource
-        # yfinance (P0) is tried first; TwelveData (P5) acts as fallback when yfinance fails.
-        if is_us_index_code(stock_code) or is_us_stock_code(stock_code):
+        # Fast path: non-Chinese tickers route directly through yfinance/TwelveData
+        # This covers: US stocks/indices, European tickers, crypto pairs, FX pairs
+        is_global_ticker = (
+            is_us_index_code(stock_code) or is_us_stock_code(stock_code)
+            or is_european_ticker(stock_code) or is_crypto_pair(stock_code)
+            or is_fx_pair(stock_code)
+        )
+        if is_global_ticker:
+            market_label = _market_tag(stock_code)
             for attempt, fetcher in enumerate(self._fetchers, start=1):
                 try:
                     logger.info(
-                        f"[datasource attempt {attempt}/{total_fetchers}] [{fetcher.name}] "
-                        f"US stock/US stockindex {stock_code}..."
+                        f"[data source attempt {attempt}/{total_fetchers}] [{fetcher.name}] "
+                        f"{market_label} ticker {stock_code}..."
                     )
                     df = fetcher.get_daily_data(
                         stock_code=stock_code,
@@ -838,7 +886,7 @@ class DataFetcherManager:
                     if df is not None and not df.empty:
                         elapsed = time.time() - request_start
                         logger.info(
-                            f"[datasourcecompleted] {stock_code} use [{fetcher.name}] fetch successful: "
+                            f"[data source OK] {stock_code} via [{fetcher.name}]: "
                             f"rows={len(df)}, elapsed={elapsed:.2f}s"
                         )
                         return df, fetcher.name
@@ -846,7 +894,7 @@ class DataFetcherManager:
                     error_type, error_reason = summarize_exception(e)
                     error_msg = f"[{fetcher.name}] ({error_type}) {error_reason}"
                     logger.warning(
-                        f"[datasourcefailed {attempt}/{total_fetchers}] [{fetcher.name}] {stock_code}: "
+                        f"[data source failed {attempt}/{total_fetchers}] [{fetcher.name}] {stock_code}: "
                         f"error_type={error_type}, reason={error_reason}"
                     )
                     errors.append(error_msg)
@@ -856,7 +904,7 @@ class DataFetcherManager:
                             f"[data source switching] {stock_code}: [{fetcher.name}] -> [{next_fetcher.name}]"
                         )
             # All fetchers failed
-            error_summary = f"US stock/US stockindex {stock_code} fetch failed:\n" + "\n".join(errors)
+            error_summary = f"{market_label} ticker {stock_code} fetch failed:\n" + "\n".join(errors)
             elapsed = time.time() - request_start
             logger.error(f"[datasourceterminate] {stock_code} fetch failed: elapsed={elapsed:.2f}s\n{error_summary}")
             raise DataFetchError(error_summary)

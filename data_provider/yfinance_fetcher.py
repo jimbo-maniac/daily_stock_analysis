@@ -80,53 +80,69 @@ class YfinanceFetcher(BaseFetcher):
 
     def _convert_stock_code(self, stock_code: str) -> str:
         """
-        convertingstock codeas Yahoo Finance format
+        Convert stock code to Yahoo Finance format.
 
-        Yahoo Finance codeformat：
-        - A-shareShanghai market：600519.SS (Shanghai Stock Exchange)
-        - A-shareShenzhen market：000001.SZ (Shenzhen Stock Exchange)
-        - HK stock：0700.HK (Hong Kong Stock Exchange)
-        - US stock：AAPL, TSLA, GOOGL (no need forsuffix)
-
-        Args:
-            stock_code: original code，e.g. '600519', 'hk00700', 'AAPL'
-
-        Returns:
-            Yahoo Finance formatcode
+        Routing logic:
+        - Crypto pairs (BTC-USD): pass through as-is
+        - FX pairs (EURUSD=X): pass through as-is
+        - European tickers (.DE, .AS, .L, .PA, .OL): pass through as-is
+        - US indices (SPX -> ^GSPC): map to yfinance symbol
+        - US stocks (AAPL): pass through as-is
+        - HK stocks (HK00700 -> 0700.HK): convert prefix to suffix
+        - A-shares (600519 -> 600519.SS): add exchange suffix
 
         Examples:
-            >>> fetcher._convert_stock_code('600519')
-            '600519.SS'
-            >>> fetcher._convert_stock_code('hk00700')
-            '0700.HK'
+            >>> fetcher._convert_stock_code('BTC-USD')
+            'BTC-USD'
+            >>> fetcher._convert_stock_code('HENS.DE')
+            'HENS.DE'
             >>> fetcher._convert_stock_code('AAPL')
             'AAPL'
+            >>> fetcher._convert_stock_code('600519')
+            '600519.SS'
         """
+        from .us_index_mapping import is_european_ticker, is_crypto_pair, is_fx_pair
+
         code = stock_code.strip().upper()
 
-        # US stockindex：mappingto Yahoo Finance symbol（e.g. SPX -> ^GSPC）
-        yf_symbol, _ = get_us_index_yf_symbol(code)
-        if yf_symbol:
-            logger.debug(f"identifyasUS stockindex: {code} -> {yf_symbol}")
-            return yf_symbol
-
-        # US stock：1-5 uppercase letters（optional .X suffix），originallikereturn
-        if is_us_stock_code(code):
-            logger.debug(f"identifyasUS stockcode: {code}")
+        # Crypto pairs: pass through directly (BTC-USD, ETH-USD)
+        if is_crypto_pair(code):
+            logger.debug(f"Identified as crypto pair: {code}")
             return code
 
-        # HK stock：hkprefix -> .HKsuffix
+        # FX pairs: pass through directly (EURUSD=X)
+        if is_fx_pair(code):
+            logger.debug(f"Identified as FX pair: {code}")
+            return code
+
+        # European tickers: pass through directly (.DE, .AS, .L, .PA, .OL etc.)
+        if is_european_ticker(code):
+            logger.debug(f"Identified as European ticker: {code}")
+            return code
+
+        # US index: map to Yahoo Finance symbol (e.g. SPX -> ^GSPC)
+        yf_symbol, _ = get_us_index_yf_symbol(code)
+        if yf_symbol:
+            logger.debug(f"Identified as US index: {code} -> {yf_symbol}")
+            return yf_symbol
+
+        # US stock: 1-5 uppercase letters (optional .X suffix), return as-is
+        if is_us_stock_code(code):
+            logger.debug(f"Identified as US stock: {code}")
+            return code
+
+        # HK stock: HK prefix -> .HK suffix
         if code.startswith('HK'):
-            hk_code = code[2:].lstrip('0') or '0'  # removebeforeguide0，butkeepat leastonecount0
-            hk_code = hk_code.zfill(4)  # fill into4digit
-            logger.debug(f"convertingHK stockcode: {stock_code} -> {hk_code}.HK")
+            hk_code = code[2:].lstrip('0') or '0'
+            hk_code = hk_code.zfill(4)
+            logger.debug(f"Converting HK stock: {stock_code} -> {hk_code}.HK")
             return f"{hk_code}.HK"
 
-        # alreadythroughpackageincludesuffixsituation
+        # Already has a recognized yfinance suffix
         if '.SS' in code or '.SZ' in code or '.HK' in code or '.BJ' in code:
             return code
 
-        # removepossibly .SH suffix
+        # Strip .SH suffix (Shanghai alternative notation)
         code = code.replace('.SH', '')
 
         # ETF: Shanghai ETF (51xx, 52xx, 56xx, 58xx) -> .SS; Shenzhen ETF (15xx, 16xx, 18xx) -> .SZ
@@ -141,13 +157,13 @@ class YfinanceFetcher(BaseFetcher):
             base = code.split('.')[0] if '.' in code else code
             return f"{base}.BJ"
 
-        # A-share：determine market by code prefix
+        # A-share: determine market by code prefix
         if code.startswith(('600', '601', '603', '688')):
             return f"{code}.SS"
         elif code.startswith(('000', '002', '300')):
             return f"{code}.SZ"
         else:
-            logger.warning(f"cannot determinestock {code} market，defaultuse Shenzhen market")
+            logger.warning(f"Cannot determine market for {code}, defaulting to Shenzhen (.SZ)")
             return f"{code}.SZ"
 
     @retry(
@@ -306,13 +322,16 @@ class YfinanceFetcher(BaseFetcher):
 
     def get_main_indices(self, region: str = "cn") -> Optional[List[Dict[str, Any]]]:
         """
-        get mainindexquote/market data (Yahoo Finance)，support A stockswithUS stock。
-        region=us whendelegate to _get_us_main_indices。
+        Get main index quotes (Yahoo Finance). Supports cn, us, and global regions.
+        region=global fetches the full macro dashboard (SPX, STOXX50, DAX, Nikkei, Gold, BTC, etc.)
         """
         import yfinance as yf
 
         if region == "us":
             return self._get_us_main_indices(yf)
+
+        if region == "global":
+            return self._get_global_macro_indices(yf)
 
         # A stocksindex：akshare code -> (yfinance code, displayname)
         yf_mapping = {
@@ -371,12 +390,30 @@ class YfinanceFetcher(BaseFetcher):
 
         return None
 
-    def _is_us_stock(self, stock_code: str) -> bool:
-        """
-        check if code isUS stockstock（excludeUS stockindex）。
+    def _get_global_macro_indices(self, yf) -> Optional[List[Dict[str, Any]]]:
+        """Fetch global macro dashboard indices: SPX, STOXX50, DAX, Nikkei, Gold, BTC, Brent, EUR/USD, VIX."""
+        from .us_index_mapping import GLOBAL_INDEX_MAPPING
 
-        delegate to us_index_mapping module is_us_stock_code()。
-        """
+        results = []
+        try:
+            for key, (yf_code, name) in GLOBAL_INDEX_MAPPING.items():
+                try:
+                    item = self._fetch_yf_ticker_data(yf, yf_code, name, key)
+                    if item:
+                        results.append(item)
+                        logger.debug(f"[Yfinance] Global index {name} OK")
+                except Exception as e:
+                    logger.warning(f"[Yfinance] Global index {name} failed: {e}")
+
+            if results:
+                logger.info(f"[Yfinance] Fetched {len(results)} global macro indices")
+                return results
+        except Exception as e:
+            logger.error(f"[Yfinance] Global macro indices fetch failed: {e}")
+        return None
+
+    def _is_us_stock(self, stock_code: str) -> bool:
+        """Check if code is a US stock (excluding US indices)."""
         return is_us_stock_code(stock_code)
 
     def _get_us_stock_quote_from_stooq(self, stock_code: str) -> Optional[UnifiedRealtimeQuote]:
@@ -617,20 +654,20 @@ class YfinanceFetcher(BaseFetcher):
 
     def get_realtime_quote(self, stock_code: str) -> Optional[UnifiedRealtimeQuote]:
         """
-        getUS stock/US stockindexrealtimequote/market datadata
+        Get realtime quote data for any global ticker.
 
-        supportUS stockstock（AAPL、TSLA）andUS stockindex（SPX、DJI etc）。
-        Data sources:yfinance Ticker.info
+        Supports: US stocks, US indices, European stocks, crypto pairs, ETFs.
 
         Args:
-            stock_code: US stockcodeorindexcode，e.g. 'AMD', 'AAPL', 'SPX', 'DJI'
+            stock_code: ticker code, e.g. 'AAPL', 'SPX', 'HENS.DE', 'BTC-USD'
 
         Returns:
-            UnifiedRealtimeQuote object，fetch failedreturn None
+            UnifiedRealtimeQuote object, or None on failure
         """
         import yfinance as yf
+        from .us_index_mapping import is_european_ticker, is_crypto_pair
 
-        # US stockindex：usemapping（SPX -> ^GSPC）
+        # US index: use mapping (SPX -> ^GSPC)
         yf_symbol, index_name = get_us_index_yf_symbol(stock_code)
         if yf_symbol:
             return self._get_us_index_realtime_quote(
@@ -639,9 +676,15 @@ class YfinanceFetcher(BaseFetcher):
                 index_name=index_name,
             )
 
-        # onlyprocessingUS stockstock
-        if not self._is_us_stock(stock_code):
-            logger.debug(f"[Yfinance] {stock_code} is notUS stock，skip")
+        # Accept: US stocks, European tickers, crypto pairs (not just US stocks)
+        upper_code = stock_code.strip().upper()
+        is_global = (
+            self._is_us_stock(stock_code)
+            or is_european_ticker(upper_code)
+            or is_crypto_pair(upper_code)
+        )
+        if not is_global:
+            logger.debug(f"[Yfinance] {stock_code} not a global ticker, skip realtime quote")
             return None
 
         try:
@@ -732,15 +775,116 @@ class YfinanceFetcher(BaseFetcher):
             return self._get_us_stock_quote_from_stooq(stock_code)
 
 
+    # ------------------------------------------------------------------
+    # Currency detection
+    # ------------------------------------------------------------------
+
+    _currency_cache: Dict[str, str] = {}
+
+    @classmethod
+    def get_currency(cls, stock_code: str) -> str:
+        """
+        Detect the listing currency for a given ticker via yfinance metadata.
+
+        Returns the ISO currency code (USD, EUR, GBP, NOK, DKK, etc.)
+        or 'USD' as fallback if detection fails.
+        """
+        if stock_code in cls._currency_cache:
+            return cls._currency_cache[stock_code]
+
+        import yfinance as yf
+
+        fetcher = cls()
+        yf_code = fetcher._convert_stock_code(stock_code)
+
+        try:
+            ticker = yf.Ticker(yf_code)
+            info = ticker.info or {}
+            currency = info.get('currency', '') or info.get('financialCurrency', '')
+            if currency:
+                cls._currency_cache[stock_code] = currency.upper()
+                return currency.upper()
+        except Exception as e:
+            logger.debug(f"[Yfinance] Currency detection failed for {stock_code}: {e}")
+
+        # Fallback: infer from exchange suffix
+        upper_code = stock_code.strip().upper()
+        suffix_currency_map = {
+            '.DE': 'EUR', '.AS': 'EUR', '.PA': 'EUR', '.MI': 'EUR',
+            '.BR': 'EUR', '.LS': 'EUR', '.IR': 'EUR', '.HE': 'EUR',
+            '.MC': 'EUR', '.VI': 'EUR',
+            '.L': 'GBP',
+            '.OL': 'NOK',
+            '.CO': 'DKK',
+            '.ST': 'SEK',
+            '.SW': 'CHF',
+            '.HK': 'HKD',
+        }
+        for suffix, curr in suffix_currency_map.items():
+            if upper_code.endswith(suffix):
+                cls._currency_cache[stock_code] = curr
+                return curr
+
+        # Crypto is always USD-denominated
+        from .us_index_mapping import is_crypto_pair
+        if is_crypto_pair(upper_code):
+            cls._currency_cache[stock_code] = 'USD'
+            return 'USD'
+
+        # Default to USD for US stocks
+        cls._currency_cache[stock_code] = 'USD'
+        return 'USD'
+
+    # ------------------------------------------------------------------
+    # Fundamentals fallback (yfinance .info)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def get_fundamentals_from_yfinance(stock_code: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch basic fundamentals from yfinance .info as fallback when FMP fails.
+
+        Returns dict with: pe_ttm, pb, dividend_yield, market_cap, roe, sector, industry
+        or None on failure.
+        """
+        import yfinance as yf
+
+        fetcher = YfinanceFetcher()
+        yf_code = fetcher._convert_stock_code(stock_code)
+
+        try:
+            ticker = yf.Ticker(yf_code)
+            info = ticker.info or {}
+            if not info:
+                return None
+
+            result = {
+                'pe_ttm': info.get('trailingPE'),
+                'pb': info.get('priceToBook'),
+                'dividend_yield': info.get('dividendYield'),
+                'market_cap': info.get('marketCap'),
+                'roe': info.get('returnOnEquity'),
+                'sector': info.get('sector', ''),
+                'industry': info.get('industry', ''),
+                'currency': (info.get('currency') or 'USD').upper(),
+                'short_name': info.get('shortName', ''),
+                'fifty_two_week_high': info.get('fiftyTwoWeekHigh'),
+                'fifty_two_week_low': info.get('fiftyTwoWeekLow'),
+            }
+            logger.debug(f"[Yfinance] Fundamentals for {stock_code}: PE={result['pe_ttm']}, PB={result['pb']}")
+            return result
+        except Exception as e:
+            logger.warning(f"[Yfinance] Failed to fetch fundamentals for {stock_code}: {e}")
+            return None
+
+
 if __name__ == "__main__":
-    # testingcode
     logging.basicConfig(level=logging.DEBUG)
 
     fetcher = YfinanceFetcher()
 
-    try:
-        df = fetcher.get_daily_data('600519')  # Maotai
-        print(f"fetch successful，total {len(df)} itemsdata")
-        print(df.tail())
-    except Exception as e:
-        print(f"fetch failed: {e}")
+    # Test European tickers
+    for ticker in ['HENS.DE', 'FLOW.AS', 'CHG.L', 'BTC-USD', 'AAPL', 'AF.PA']:
+        yf_code = fetcher._convert_stock_code(ticker)
+        currency = YfinanceFetcher.get_currency(ticker)
+        print(f"{ticker} -> yfinance: {yf_code}, currency: {currency}")

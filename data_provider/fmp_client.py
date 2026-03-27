@@ -74,11 +74,42 @@ class FMPClient:
             ratios = self._get_ratios_ttm(symbol)
             revenue = self._get_revenue_yoy(symbol)
             combined = {**ratios, **revenue}
-            logger.info("[FMP] %s fundamentals: %s", symbol, combined)
-            return combined
+            # Check if FMP returned any useful data
+            has_data = any(v is not None for v in combined.values())
+            if has_data:
+                logger.info("[FMP] %s fundamentals: %s", symbol, combined)
+                return combined
+            # FMP returned empty — fall through to yfinance fallback
+            logger.info("[FMP] %s returned no data, trying yfinance fallback", symbol)
         except Exception as exc:
-            logger.warning("[FMP] Failed to fetch fundamentals for %s: %s", symbol, exc)
-            return None
+            logger.warning("[FMP] Failed for %s: %s — trying yfinance fallback", symbol, exc)
+
+        # Fallback to yfinance .info for fundamentals
+        return self._fetch_from_yfinance(symbol)
+
+    @staticmethod
+    def _fetch_from_yfinance(symbol: str) -> Optional[Dict[str, Any]]:
+        """Fetch fundamentals from yfinance .info as FMP fallback."""
+        try:
+            from .yfinance_fetcher import YfinanceFetcher
+            yf_data = YfinanceFetcher.get_fundamentals_from_yfinance(symbol)
+            if yf_data:
+                result = {
+                    "pe_ttm": yf_data.get("pe_ttm"),
+                    "pb": yf_data.get("pb"),
+                    "dividend_yield": yf_data.get("dividend_yield"),
+                    "roe": yf_data.get("roe"),
+                    "last_year_revenue": None,
+                    "prev_year_revenue": None,
+                    "revenue_yoy_growth": None,
+                    "_source": "yfinance_fallback",
+                }
+                logger.info("[FMP/yfinance fallback] %s fundamentals: PE=%s PB=%s",
+                            symbol, result["pe_ttm"], result["pb"])
+                return result
+        except Exception as exc:
+            logger.warning("[FMP/yfinance fallback] Failed for %s: %s", symbol, exc)
+        return None
 
     def _get_ratios_ttm(self, symbol: str) -> Dict[str, Any]:
         url = f"{_BASE_URL}/v3/ratios-ttm/{symbol}"
