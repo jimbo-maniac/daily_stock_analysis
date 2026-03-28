@@ -347,6 +347,13 @@ class MarketAnalyzer:
         # Insert the block before the next heading, with spacing
         return text[:insert_pos].rstrip() + '\n\n' + block + '\n\n' + text[insert_pos:].lstrip('\n')
 
+    @property
+    def _amount_unit(self) -> str:
+        """Return the amount unit label based on region."""
+        if self.region in ("global", "eu", "us"):
+            return "B"
+        return "B CNY"
+
     def _build_stats_block(self, overview: MarketOverview) -> str:
         """Build market statistics block."""
         has_stats = overview.up_count or overview.down_count or overview.total_amount
@@ -356,7 +363,7 @@ class MarketAnalyzer:
             f"> 📈 Up **{overview.up_count}** / Down **{overview.down_count}** / "
             f"Flat **{overview.flat_count}** | "
             f"LimitUp **{overview.limit_up_count}** / LimitDown **{overview.limit_down_count}** | "
-            f"Amount **{overview.total_amount:.0f}** B CNY"
+            f"Amount **{overview.total_amount:.0f}** {self._amount_unit}"
         ]
         return "\n".join(lines)
 
@@ -365,7 +372,7 @@ class MarketAnalyzer:
         if not overview.indices:
             return ""
         lines = [
-            "| Index | Latest | Change | Amount (B CNY) |",
+            f"| Index | Latest | Change | Amount ({self._amount_unit}) |",
             "|-------|--------|--------|----------------|"]
         for idx in overview.indices:
             arrow = "🔴" if idx.change_pct < 0 else "🟢" if idx.change_pct > 0 else "⚪"
@@ -429,7 +436,7 @@ class MarketAnalyzer:
                 stats_block = f"""## Market Overview
 - Up: {overview.up_count} | Down: {overview.down_count} | Flat: {overview.flat_count}
 - Limit up: {overview.limit_up_count} | Limit down: {overview.limit_down_count}
-- Total volume (CNY bn): {overview.total_amount:.0f}"""
+- Total volume ({self._amount_unit}): {overview.total_amount:.0f}"""
             else:
                 stats_block = "## Market Overview\n(US market has no equivalent advance/decline stats.)"
 
@@ -444,7 +451,7 @@ Lagging: {bottom_sectors_text if bottom_sectors_text else "N/A"}"""
                 stats_block = f"""## Market Overview
 - Up: {overview.up_count} | Down: {overview.down_count} | Flat: {overview.flat_count}
 - Limit up: {overview.limit_up_count} | Limit down: {overview.limit_down_count}
-- Total market amount: {overview.total_amount:.0f} B CNY"""
+- Total market amount: {overview.total_amount:.0f} {self._amount_unit}"""
             else:
                 stats_block = "## Market Overview\n(No advance/decline stats available for US market)"
 
@@ -709,7 +716,7 @@ Output the review report content directly, no extra commentary.
 | Losers | {overview.down_count} |
 | Limit up | {overview.limit_up_count} |
 | Limit down | {overview.limit_down_count} |
-| Total amount | {overview.total_amount:.0f} B CNY |
+| Total amount | {overview.total_amount:.0f} {self._amount_unit} |
 """
         sector_section = ""
         if self.profile.has_sector_rankings and (top_text or bottom_text):

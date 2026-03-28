@@ -586,7 +586,7 @@ class Config:
 
     # report type：simple(simplified) or full(complete)
     report_type: str = "simple"
-    report_language: str = "zh"
+    report_language: str = "en"
 
     # onlyanalysis resultsummary：true whenonlypushsummary，notincludeindividual stockdetails（Issue #262）
     report_summary_only: bool = False
@@ -656,7 +656,7 @@ class Config:
     run_immediately: bool = True              # startwhenwhetherimmediatelyexecuteonce（non-fixedwhenmode）
     market_review_enabled: bool = True        # whetherenabledmarket review
     # market review region：cn(A-share)、us(US stock)、both(twoer)，us suitableonlymonitorUS stockuser
-    market_review_region: str = "cn"
+    market_review_region: str = "global"
     # trading daycheck：defaultenabled，non-trading dayskipexecute；set to false or --force-run canmandatoryexecute（Issue #373）
     trading_day_check_enabled: bool = True
 
@@ -1256,7 +1256,7 @@ class Config:
             run_immediately=legacy_run_immediately,
             market_review_enabled=os.getenv('MARKET_REVIEW_ENABLED', 'true').lower() == 'true',
             market_review_region=cls._parse_market_review_region(
-                os.getenv('MARKET_REVIEW_REGION', 'cn')
+                os.getenv('MARKET_REVIEW_REGION', 'global')
             ),
             trading_day_check_enabled=os.getenv('TRADING_DAY_CHECK_ENABLED', 'true').lower() != 'false',
             webui_enabled=os.getenv('WEBUI_ENABLED', 'false').lower() == 'true',
@@ -1665,7 +1665,7 @@ class Config:
         if file_value is not None:
             return file_value
 
-        return env_value or "zh"
+        return env_value or "en"
 
     @classmethod
     def _parse_report_language(cls, value: Optional[str]) -> str:
@@ -1701,15 +1701,15 @@ class Config:
 
     @classmethod
     def _parse_market_review_region(cls, value: str) -> str:
-        """parsingmarket review region，non-methodvaluerecordWarningafterrollbackas cn"""
+        """Parse market review region, warn and fallback to 'global' for invalid values."""
         import logging
-        v = (value or 'cn').strip().lower()
-        if v in ('cn', 'us', 'both'):
+        v = (value or 'global').strip().lower()
+        if v in ('cn', 'us', 'eu', 'global', 'both'):
             return v
         logging.getLogger(__name__).warning(
-            f"MARKET_REVIEW_REGION configuration value '{value}' invalid，alreadyrollbackasdefault value 'cn'（legalvalue：cn / us / both）"
+            f"MARKET_REVIEW_REGION value '{value}' invalid, falling back to 'global' (valid: cn / us / eu / global / both)"
         )
-        return 'cn'
+        return 'global'
 
     @classmethod
     def _parse_md2img_engine(cls, value: str) -> str:

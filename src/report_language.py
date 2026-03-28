@@ -145,12 +145,12 @@ _UNKNOWN_BY_LANGUAGE = {
 }
 
 _NO_DATA_BY_LANGUAGE = {
-    "zh": "datamissing",
+    "zh": "Data unavailable",
     "en": "Data unavailable",
 }
 
 _GENERIC_STOCK_NAME_BY_LANGUAGE = {
-    "zh": "pendingconfirmstock",
+    "zh": "Unnamed Stock",
     "en": "Unnamed Stock",
 }
 

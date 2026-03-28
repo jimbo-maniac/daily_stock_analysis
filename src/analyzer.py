@@ -567,10 +567,10 @@ Please output strictly in the following JSON format — this is a complete [Deci
 
         "battle_plan": {
             "sniper_points": {
-                "ideal_buy": "Ideal buy point: XX CNY (near MA5)",
-                "secondary_buy": "Secondary buy point: XX CNY (near MA10)",
-                "stop_loss": "Stop loss: XX CNY (break below MA20 or X%)",
-                "take_profit": "Target: XX CNY (prior high/key level)"
+                "ideal_buy": "Ideal buy point: XX [currency] (near MA5)",
+                "secondary_buy": "Secondary buy point: XX [currency] (near MA10)",
+                "stop_loss": "Stop loss: XX [currency] (break below MA20 or X%)",
+                "take_profit": "Target: XX [currency] (prior high/key level)"
             },
             "position_strategy": {
                 "suggested_position": "Suggested position: X tenths",
@@ -1194,6 +1194,30 @@ Output strictly in the following JSON format:
                 report_language=report_language,
             )
     
+    @staticmethod
+    def _currency_for_code(code: str) -> str:
+        """Return display currency for a stock code based on its market pattern."""
+        from data_provider.us_index_mapping import (
+            is_us_stock_code, is_european_ticker, is_crypto_pair, is_fx_pair,
+        )
+        c = (code or "").strip().upper()
+        if is_crypto_pair(c) or is_fx_pair(c):
+            return "USD"
+        if is_european_ticker(c):
+            suffix = c[c.rfind("."):]
+            _eu_currency = {
+                ".L": "GBP", ".PA": "EUR", ".DE": "EUR", ".AS": "EUR",
+                ".MI": "EUR", ".MC": "EUR", ".BR": "EUR", ".OL": "NOK",
+                ".ST": "SEK", ".CO": "DKK", ".HE": "EUR", ".VI": "EUR",
+                ".SW": "CHF",
+            }
+            return _eu_currency.get(suffix, "EUR")
+        if is_us_stock_code(c):
+            return "USD"
+        if c.startswith("HK") or c.startswith("hk"):
+            return "HKD"
+        return "CNY"
+
     def _format_prompt(
         self,
         context: Dict[str, Any],
@@ -1213,7 +1237,8 @@ Output strictly in the following JSON format:
         """
         code = context.get('code', 'Unknown')
         report_language = normalize_report_language(report_language)
-        
+        ccy = self._currency_for_code(code)
+
         # Prefer stock name from context (from realtime_quote)
         stock_name = context.get('stock_name', name)
         if not stock_name or stock_name == f'Stock {code}':
@@ -1240,13 +1265,13 @@ Output strictly in the following JSON format:
 ### Today's Quote
 | Indicator | Value |
 |-----------|-------|
-| Close | {today.get('close', 'N/A')} CNY |
-| Open | {today.get('open', 'N/A')} CNY |
-| High | {today.get('high', 'N/A')} CNY |
-| Low | {today.get('low', 'N/A')} CNY |
+| Close | {today.get('close', 'N/A')} {ccy} |
+| Open | {today.get('open', 'N/A')} {ccy} |
+| High | {today.get('high', 'N/A')} {ccy} |
+| Low | {today.get('low', 'N/A')} {ccy} |
 | Change % | {today.get('pct_chg', 'N/A')}% |
 | Volume | {self._format_volume(today.get('volume'))} |
-| Amount | {self._format_amount(today.get('amount'))} |
+| Amount | {self._format_amount(today.get('amount'), ccy)} |
 
 ### Moving Average System (Key Judgment Indicators)
 | MA | Value | Note |
@@ -1264,13 +1289,13 @@ Output strictly in the following JSON format:
 ### Realtime Quote Enhanced Data
 | Indicator | Value | Interpretation |
 |-----------|-------|----------------|
-| Current Price | {rt.get('price', 'N/A')} CNY | |
+| Current Price | {rt.get('price', 'N/A')} {ccy} | |
 | **Volume Ratio** | **{rt.get('volume_ratio', 'N/A')}** | {rt.get('volume_ratio_desc', '')} |
 | **Turnover Rate** | **{rt.get('turnover_rate', 'N/A')}%** | |
 | P/E (dynamic) | {rt.get('pe_ratio', 'N/A')} | |
 | P/B | {rt.get('pb_ratio', 'N/A')} | |
-| Total Market Cap | {self._format_amount(rt.get('total_mv'))} | |
-| Float Market Cap | {self._format_amount(rt.get('circ_mv'))} | |
+| Total Market Cap | {self._format_amount(rt.get('total_mv'), ccy)} | |
+| Float Market Cap | {self._format_amount(rt.get('circ_mv'), ccy)} | |
 | 60-day Change | {rt.get('change_60d', 'N/A')}% | Medium-term performance |
 """
 
@@ -1355,7 +1380,7 @@ Output strictly in the following JSON format:
 | Metric | Value | Health Standard |
 |--------|-------|----------------|
 | **Profit Ratio** | **{profit_ratio:.1%}** | Caution when 70-90% |
-| Average Cost | {chip.get('avg_cost', 'N/A')} CNY | Current price should be 5-15% above |
+| Average Cost | {chip.get('avg_cost', 'N/A')} {ccy} | Current price should be 5-15% above |
 | 90% Chip Concentration | {chip.get('concentration_90', 0):.2%} | <15% is concentrated |
 | 70% Chip Concentration | {chip.get('concentration_70', 0):.2%} | |
 | Chip Status | {chip.get('chip_status', unknown_text)} | |
@@ -1536,16 +1561,16 @@ Please output the complete JSON format Decision Dashboard."""
         else:
             return f"{volume:.0f} shares"
 
-    def _format_amount(self, amount: Optional[float]) -> str:
-        """Format amount display"""
+    def _format_amount(self, amount: Optional[float], currency: str = "CNY") -> str:
+        """Format amount display with appropriate currency."""
         if amount is None:
             return 'N/A'
         if amount >= 1e8:
-            return f"{amount / 1e8:.2f} B CNY"
+            return f"{amount / 1e8:.2f}B {currency}"
         elif amount >= 1e4:
-            return f"{amount / 1e4:.2f} K CNY"
+            return f"{amount / 1e4:.2f}K {currency}"
         else:
-            return f"{amount:.0f} CNY"
+            return f"{amount:.0f} {currency}"
 
     def _format_percent(self, value: Optional[float]) -> str:
         """Format percentage display"""
@@ -1600,7 +1625,7 @@ Please output the complete JSON format Decision Dashboard."""
             "change_amount": self._format_price(change_amount),
             "amplitude": self._format_percent(amplitude),
             "volume": self._format_volume(today.get('volume')),
-            "amount": self._format_amount(today.get('amount')),
+            "amount": self._format_amount(today.get('amount'), self._currency_for_code(context.get('code', ''))),
         }
 
         if realtime:

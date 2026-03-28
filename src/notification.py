@@ -1491,7 +1491,7 @@ class NotificationService(
         "efinance": {"zh": "Eastmoney(efinance)", "en": "Eastmoney (efinance)"},
         "tushare": {"zh": "Tushare Pro", "en": "Tushare Pro"},
         "sina": {"zh": "Sina Finance", "en": "Sina Finance"},
-        "fallback": {"zh": "fallbackfallback", "en": "Fallback"},
+        "fallback": {"zh": "Fallback", "en": "Fallback"},
     }
 
     def _get_source_display_name(self, source: Any, language: Optional[str]) -> str:
