@@ -278,8 +278,24 @@ def run_full_analysis(
         if stock_codes is None:
             config.refresh_stock_list()
 
+        # Portfolio bucket rotation: for global/eu region, prepend today's
+        # portfolio bucket tickers before the user's monitoring list so that
+        # actual positions are always analysed first.
+        raw_codes = stock_codes if stock_codes is not None else config.stock_list
+        review_region = getattr(config, 'market_review_region', 'global') or 'global'
+        if review_region in ('global', 'eu'):
+            from src.core.market_strategy import get_portfolio_tickers_for_today
+            portfolio_today = get_portfolio_tickers_for_today()
+            # Prepend bucket tickers; deduplicate while preserving order
+            merged: list = list(portfolio_today)
+            for t in raw_codes:
+                if t not in merged:
+                    merged.append(t)
+            raw_codes = merged
+            logger.info(f"Portfolio rotation: bucket tickers prepended → {portfolio_today}")
+
         # Issue #373: Trading day filter (per-stock, per-market)
-        effective_codes = stock_codes if stock_codes is not None else config.stock_list
+        effective_codes = raw_codes
         filtered_codes, effective_region, should_skip = _compute_trading_day_filter(
             config, args, effective_codes
         )

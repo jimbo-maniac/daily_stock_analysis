@@ -20,6 +20,7 @@ Usage:
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 
 import numpy as np
@@ -334,33 +335,48 @@ class ThesisHealthChecker:
         """
         Get 5-day and 20-day returns for a ticker.
 
+        Uses a fresh (non-cached) requests.Session so each run fetches live
+        market data rather than hitting yfinance's disk-based response cache
+        (~/.cache/py-yfinance/) which has a default TTL of ~1 hour.
+
         Returns:
             (return_5d_pct, return_20d_pct) or None if data unavailable
         """
-        from data_provider.base import DataFetcherManager
+        today = datetime.now()
+        start_str = (today - timedelta(days=self.lookback_days * 2)).strftime('%Y-%m-%d')
+        end_str = (today + timedelta(days=1)).strftime('%Y-%m-%d')  # +1 ensures today's close
 
-        manager = DataFetcherManager()
         try:
-            df, source = manager.get_daily_data(
-                stock_code=ticker,
-                days=self.lookback_days,
-            )
-            if df is None or df.empty or "close" not in df.columns:
-                logger.warning(f"[ThesisHealth] No data for {ticker}")
+            import yfinance as yf
+            import requests as _requests
+            # A plain requests.Session bypasses yfinance's CachedSession so
+            # every call hits the network and returns up-to-date prices.
+            session = _requests.Session()
+            t = yf.Ticker(ticker, session=session)
+            hist = t.history(start=start_str, end=end_str, auto_adjust=True)
+            if hist is None or hist.empty:
+                logger.warning(f"[ThesisHealth] No yfinance data for {ticker}")
+                return None
+            prices = hist['Close'].dropna()
+        except Exception as yf_err:
+            logger.warning(f"[ThesisHealth] yfinance fetch failed for {ticker}: {yf_err}, falling back to DataFetcherManager")
+            # Fallback to full data-provider chain (TwelveData, FMP, etc.)
+            try:
+                from data_provider.base import DataFetcherManager
+                df, _source = DataFetcherManager().get_daily_data(stock_code=ticker, days=self.lookback_days)
+                if df is None or df.empty or "close" not in df.columns:
+                    return None
+                prices = df.set_index("date")["close"].dropna()
+            except Exception as e:
+                logger.warning(f"[ThesisHealth] All data sources failed for {ticker}: {e}")
                 return None
 
-            prices = df.set_index("date")["close"]
-            if len(prices) < 5:
-                return None
-
-            ret_5d = float((prices.iloc[-1] / prices.iloc[-5] - 1) * 100) if len(prices) >= 5 else None
-            ret_20d = float((prices.iloc[-1] / prices.iloc[-20] - 1) * 100) if len(prices) >= 20 else None
-
-            return (ret_5d, ret_20d)
-
-        except Exception as e:
-            logger.warning(f"[ThesisHealth] Failed to fetch {ticker}: {e}")
+        if len(prices) < 5:
             return None
+
+        ret_5d = float((prices.iloc[-1] / prices.iloc[-5] - 1) * 100) if len(prices) >= 5 else None
+        ret_20d = float((prices.iloc[-1] / prices.iloc[-20] - 1) * 100) if len(prices) >= 20 else None
+        return (ret_5d, ret_20d)
 
 
 def format_thesis_report(theses: List[ThesisStatus]) -> str:

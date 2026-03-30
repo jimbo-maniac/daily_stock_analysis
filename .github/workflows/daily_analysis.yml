@@ -1,11 +1,12 @@
 name: Daily Portfolio Analysis
 
 on:
-  # Three CET-aligned daily runs (UTC times; CET = UTC+1, CEST = UTC+2)
+  # Three CEST-aligned daily runs (UTC times; CEST = UTC+2, CET = UTC+1)
+  # Amsterdam observes CEST (UTC+2) from last Sunday of March to last Sunday of October.
   schedule:
-    - cron: '0 5 * * 1-5'      # 06:00 CET / 07:00 CEST — Pre-European open brief
-    - cron: '30 16 * * 1-5'    # 17:30 CET / 18:30 CEST — European close + US midday
-    - cron: '0 22 * * 1-5'     # 23:00 CET / 00:00 CEST — US close full report (MAIN)
+    - cron: '0 4 * * 1-5'      # 06:00 CEST / 05:00 CET — Pre-European open brief
+    - cron: '30 15 * * 1-5'    # 17:30 CEST / 16:30 CET — European close + US midday
+    - cron: '0 21 * * 1-5'     # 23:00 CEST / 22:00 CET — US close full report (MAIN)
 
   # Manual trigger
   workflow_dispatch:

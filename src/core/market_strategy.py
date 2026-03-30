@@ -2,7 +2,8 @@
 """Market strategy blueprints for CN/US daily market recap."""
 
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime
+from typing import Dict, List, Tuple
 
 
 @dataclass(frozen=True)
@@ -187,3 +188,27 @@ def get_market_strategy_blueprint(region: str) -> MarketStrategyBlueprint:
     if region in ("global", "eu"):
         return GLOBAL_BLUEPRINT
     return US_BLUEPRINT if region == "us" else CN_BLUEPRINT
+
+
+# === Portfolio bucket rotation ===
+# Maps each of the 5 thematic buckets to its representative tickers.
+# Drawn from pair_tracker long legs and thesis_health proxies so the
+# rotation covers the actual portfolio, not just monitoring names.
+PORTFOLIO_BUCKETS: List[Tuple[str, List[str]]] = [
+    ("Hard Assets",          ["NEM", "GOLD", "PHYS", "TIP", "BTC-USD"]),
+    ("Energy / Nuclear",     ["LNG", "EQNR", "CCJ", "CEG", "VST"]),
+    ("Defense Supply Chain", ["ASML", "HENS.DE", "RENK.DE", "KGSY", "CRWD"]),
+    ("Consumer Stress",      ["TJX", "DLTR", "FCFS", "CXW"]),
+    ("Geopolitical",         ["KSA", "UAE", "FLOW.AS", "RYAAY", "ZS"]),
+]
+
+
+def get_portfolio_tickers_for_today() -> List[str]:
+    """Return this weekday's portfolio bucket tickers (Mon=Hard Assets … Fri=Geopolitical).
+
+    The bucket rotates Mon–Fri so each trading day focuses on a different
+    thematic slice. Weekend index 5/6 falls back to Hard Assets (bucket 0).
+    """
+    day_idx = datetime.now().weekday() % len(PORTFOLIO_BUCKETS)
+    _bucket_name, tickers = PORTFOLIO_BUCKETS[day_idx]
+    return list(tickers)
