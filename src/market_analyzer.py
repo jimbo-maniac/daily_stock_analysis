@@ -314,6 +314,19 @@ class MarketAnalyzer:
         indices_block = self._build_indices_block(overview)
         sector_block = self._build_sector_block(overview)
 
+        if self.region in ("global", "eu"):
+            # Global template uses different section names. Prepend the indices
+            # dashboard block right after the top-level ## heading so it appears
+            # at the top of the report.
+            if indices_block:
+                first_section = re.search(r'\n###\s', review)
+                if first_section:
+                    pos = first_section.start()
+                    review = review[:pos].rstrip() + '\n\n' + indices_block + '\n\n' + review[pos:].lstrip('\n')
+                else:
+                    review = indices_block + '\n\n' + review
+            return review
+
         # Inject market stats after "### 1. Market Summary" section (before next ###)
         if stats_block:
             review = self._insert_after_section(review, r'###\s*1[.、]\s*Market Summary', stats_block)

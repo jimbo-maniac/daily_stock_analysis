@@ -89,6 +89,9 @@ STOCK_NAME_MAP = {
     "LI": "Li Auto",
     "COIN": "Coinbase",
     "MSTR": "MicroStrategy",
+    # === Crypto pairs ===
+    "BTC-USD": "Bitcoin",
+    "ETH-USD": "Ethereum",
     # === HK stocks (5-digit) ===
     "00700": "Tencent Holdings",
     "03690": "Meituan",
