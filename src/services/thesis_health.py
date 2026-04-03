@@ -348,11 +348,7 @@ class ThesisHealthChecker:
 
         try:
             import yfinance as yf
-            import requests as _requests
-            # A plain requests.Session bypasses yfinance's CachedSession so
-            # every call hits the network and returns up-to-date prices.
-            session = _requests.Session()
-            t = yf.Ticker(ticker, session=session)
+            t = yf.Ticker(ticker)
             hist = t.history(start=start_str, end=end_str, auto_adjust=True)
             if hist is None or hist.empty:
                 logger.warning(f"[ThesisHealth] No yfinance data for {ticker}")
