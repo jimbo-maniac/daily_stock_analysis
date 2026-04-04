@@ -24,9 +24,121 @@ from src.analyzer import GeminiAnalyzer
 logger = logging.getLogger(__name__)
 
 
-def _build_global_extra_sections() -> str:
-    """Build pair tracker + thesis health sections for global reports."""
+def _build_kill_switch_section() -> tuple:
+    """
+    Build kill switch alerts section.
+
+    Returns:
+        (alerts_text, kill_switch_status_dict) where:
+        - alerts_text: Formatted alerts (empty if none)
+        - kill_switch_status_dict: Dict mapping thesis_id -> status for position sizing
+    """
+    alerts_text = ""
+    status_dict = {}
+
+    try:
+        from src.services.kill_switch_monitor import (
+            KillSwitchMonitor,
+            format_kill_switch_alerts,
+            format_kill_switch_summary,
+        )
+        monitor = KillSwitchMonitor()
+        results = monitor.check_all()
+
+        # Build status dict for position sizer
+        for r in results:
+            status_dict[r.thesis_id] = r.overall_status
+
+        # Format alerts (only shown if any triggered or warning)
+        alerts_text = format_kill_switch_alerts(results)
+
+        # Also get summary for thesis health section
+        summary_text = format_kill_switch_summary(results)
+        return alerts_text, status_dict, summary_text
+
+    except Exception as e:
+        logger.warning(f"Kill switch monitor failed (skipping): {e}")
+        return "", {}, ""
+
+
+def _build_position_sizing_section(
+    kill_switch_status: dict,
+    regime: str = "RISK_ON",
+) -> str:
+    """
+    Build position sizing section for HIGH/MEDIUM conviction signals.
+
+    This is a placeholder that would integrate with actual analysis results.
+    For now, returns empty string as sizing needs signal context.
+    """
+    # Position sizing is contextual - it needs actual signals from analysis
+    # This section would be populated when integrating with individual stock analysis
+    return ""
+
+
+def _build_correlation_section(is_weekly: bool = False) -> str:
+    """
+    Build correlation/crowding risk section.
+
+    Args:
+        is_weekly: If True, show full cluster list. If False, only show alerts.
+
+    Returns:
+        Formatted correlation report (empty if no alerts in daily mode)
+    """
+    try:
+        from src.services.correlation_monitor import (
+            CorrelationMonitor,
+            format_correlation_report,
+        )
+        monitor = CorrelationMonitor()
+        report = monitor.analyze()
+        return format_correlation_report(report, show_full=is_weekly)
+    except Exception as e:
+        logger.warning(f"Correlation monitor failed (skipping): {e}")
+        return ""
+
+
+def _build_global_extra_sections(is_weekly: bool = False) -> str:
+    """
+    Build all extra sections for global reports.
+
+    Section order:
+    1. Kill switch alerts (if any triggered - FIRST)
+    2. Thesis health with kill switch status
+    3. Pair tracker
+    4. Correlation/crowding risk (if any alerts)
+
+    Args:
+        is_weekly: If True, show full correlation clusters
+
+    Returns:
+        Combined markdown sections
+    """
     sections = []
+    priority_sections = []  # Kill switch alerts go first
+
+    # Kill switch monitoring (provides alerts + status for other modules)
+    kill_switch_alerts, kill_switch_status, kill_switch_summary = _build_kill_switch_section()
+
+    # Kill switch alerts go at the very top if any
+    if kill_switch_alerts:
+        priority_sections.append(kill_switch_alerts)
+
+    # Thesis health (with kill switch status integrated)
+    try:
+        from src.services.thesis_health import ThesisHealthChecker, format_thesis_report
+        checker = ThesisHealthChecker()
+        theses = checker.check_all()
+        if theses:
+            sections.append(format_thesis_report(theses))
+    except Exception as e:
+        logger.warning(f"Thesis health check failed (skipping): {e}")
+
+    # Add kill switch summary after thesis health if we have it
+    if kill_switch_summary and not kill_switch_alerts:
+        # Only show summary if no active alerts (alerts contain more detail)
+        sections.append(kill_switch_summary)
 
     # Pair tracker
     try:
@@ -38,17 +150,14 @@ def _build_global_extra_sections() -> str:
     except Exception as e:
         logger.warning(f"Pair tracker failed (skipping): {e}")
 
-    # Thesis health
-    try:
-        from src.services.thesis_health import ThesisHealthChecker, format_thesis_report
-        checker = ThesisHealthChecker()
-        theses = checker.check_all()
-        if theses:
-            sections.append(format_thesis_report(theses))
-    except Exception as e:
-        logger.warning(f"Thesis health check failed (skipping): {e}")
+    # Correlation/crowding risk
+    corr_section = _build_correlation_section(is_weekly=is_weekly)
+    if corr_section:
+        sections.append(corr_section)
 
-    return "\n\n".join(sections)
+    # Combine: priority sections first (kill switch alerts), then regular sections
+    all_sections = priority_sections + sections
+    return "\n\n---\n\n".join(all_sections)
 
 
 def run_market_review(
@@ -114,8 +223,11 @@ def run_market_review(
             )
             review_report = market_analyzer.run_daily_review()
 
-            # Append pair tracker and thesis health sections
-            extra_sections = _build_global_extra_sections()
+            # Check if this is a weekly run (Sunday) for full correlation report
+            is_weekly = datetime.now().weekday() == 6  # Sunday
+
+            # Append pair tracker, thesis health, kill switches, correlation sections
+            extra_sections = _build_global_extra_sections(is_weekly=is_weekly)
             if extra_sections and review_report:
                 review_report += "\n\n---\n\n" + extra_sections
             elif extra_sections:
