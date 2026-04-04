@@ -48,6 +48,43 @@ from src.schemas.report_schema import AnalysisReportSchema
 logger = logging.getLogger(__name__)
 
 
+# === Strategy Context Loader ===
+_STRATEGY_CONTEXT_CACHE: Optional[str] = None
+
+
+def _load_strategy_context() -> str:
+    """
+    Load STRATEGY.md as permanent context for the LLM.
+
+    Returns the full content of STRATEGY.md, cached after first load.
+    If file is missing or unreadable, returns empty string with warning.
+    """
+    global _STRATEGY_CONTEXT_CACHE
+    if _STRATEGY_CONTEXT_CACHE is not None:
+        return _STRATEGY_CONTEXT_CACHE
+
+    import os
+    strategy_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "STRATEGY.md"
+    )
+
+    try:
+        with open(strategy_path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+        _STRATEGY_CONTEXT_CACHE = content
+        logger.info(f"Strategy context loaded: {len(content)} characters from STRATEGY.md")
+        return content
+    except FileNotFoundError:
+        logger.warning(f"STRATEGY.md not found at {strategy_path}, proceeding without strategy context")
+        _STRATEGY_CONTEXT_CACHE = ""
+        return ""
+    except Exception as e:
+        logger.warning(f"Failed to load STRATEGY.md: {e}, proceeding without strategy context")
+        _STRATEGY_CONTEXT_CACHE = ""
+        return ""
+
+
 def check_content_integrity(result: "AnalysisResult") -> Tuple[bool, List[str]]:
     """
     Check mandatory fields for report content integrity.
@@ -802,7 +839,11 @@ Output strictly in the following JSON format:
 5. **Risk priority**: Thesis invalidation risks must be prominently flagged."""
 
     def _get_analysis_system_prompt(self, report_language: str, stock_code: str = "") -> str:
-        """Build the analyzer system prompt based on stock region and language."""
+        """Build the analyzer system prompt based on stock region and language.
+
+        For global stocks (US, EU, crypto, FX), prepends STRATEGY.md content
+        as permanent investment framework context before the system prompt.
+        """
         from data_provider.us_index_mapping import (
             is_us_stock_code, is_european_ticker, is_crypto_pair, is_fx_pair,
         )
@@ -815,6 +856,20 @@ Output strictly in the following JSON format:
         )
 
         base_prompt = self.GLOBAL_SYSTEM_PROMPT if is_global else self.SYSTEM_PROMPT
+
+        # Prepend STRATEGY.md context for global stocks
+        if is_global:
+            strategy_context = _load_strategy_context()
+            if strategy_context:
+                base_prompt = (
+                    "# INVESTMENT STRATEGY CONTEXT\n\n"
+                    "The following is the investor's complete investment framework. "
+                    "You MUST reason against this framework for every analysis. "
+                    "Reference specific theses, buckets, and kill switch conditions.\n\n"
+                    f"{strategy_context}\n\n"
+                    "---\n\n"
+                    f"{base_prompt}"
+                )
 
         if normalize_report_language(report_language) == "en":
             return base_prompt + """

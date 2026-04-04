@@ -22,6 +22,7 @@ from src.config import get_config
 from src.search_service import SearchService
 from src.core.market_profile import get_profile, MarketProfile
 from src.core.market_strategy import get_market_strategy_blueprint
+from src.analyzer import _load_strategy_context
 from data_provider.base import DataFetcherManager
 
 logger = logging.getLogger(__name__)
@@ -485,11 +486,25 @@ Leading losers: {bottom_sectors_text if bottom_sectors_text else "No data"}"""
 
         # Global macro portfolio prompt (European-based thematic investor)
         if self.region in ("global", "eu"):
-            return f"""You are a senior macro strategist advising a European-based thematic portfolio investor.
+            # Load STRATEGY.md as permanent context
+            strategy_context = _load_strategy_context()
+            strategy_section = ""
+            if strategy_context:
+                strategy_section = f"""
+---
 
+# INVESTMENT STRATEGY FRAMEWORK (MUST REFERENCE)
+
+{strategy_context}
+
+---
+
+"""
+            return f"""You are a senior macro strategist advising a European-based thematic portfolio investor.
+{strategy_section}
 The portfolio is structured in 5 buckets: Hard Assets, Energy/Nuclear, Defense Supply Chain, Consumer Stress, and Geopolitical hedges. The investor uses Interactive Brokers from Amsterdam and can go long and short.
 
-Produce a concise global macro brief based on the data below.
+Produce a concise global macro brief based on the data below. YOU MUST reference the specific thesis conditions and kill switch thresholds from the strategy framework above.
 
 [Requirements]
 - Output pure Markdown only
